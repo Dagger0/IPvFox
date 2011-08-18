@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:NC="http://home.netscape.com/NC-rdf#"
+         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Description RDF:about="urn:mozilla:install-manifest"
+                   em:id="ipv6indicator@dagger2-addons.mozilla.org"
+                   em:type="2"
+                   em:version="1.0"
+                   em:name="IPv6 Indicator"
+                   em:description="HTTP channel observer test."
+                   em:creator="Dagger"
+                   em:bootstrap="true">
+    <em:targetApplication RDF:resource="rdf:#$firefox"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="rdf:#$firefox"
+                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                   em:minVersion="5.0"
+                   em:maxVersion="8.0a1"/>
+</RDF:RDF>

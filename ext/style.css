@@ -1,0 +1,46 @@
+#ipvfoo-table {
+  border-collapse: collapse;
+  -moz-user-focus: normal;
+  -moz-user-select: text;
+}
+
+#ipvfoo-panel table:not([ipvfoo-nohosts]) td {
+  /*border: 1px solid black;*/
+  /*padding: 20px 2px;*/
+}
+
+#ipvfoo-panel table td:first-child {
+  padding-right: 0.3em;
+}
+
+#ipvfoo-panel td.ipv6 {
+  color: green;
+}
+
+#ipvfoo-panel td.ipv4 {
+  color: red;
+}
+
+#go-button[ipvfoo-ipv4main] {
+  background: red;
+}
+
+#go-button[ipvfoo-ipv6main] {
+  background: green;
+}
+
+#go-button[ipvfoo-ipv4additional] {
+  border: 2px solid cyan;
+}
+
+#go-button[ipvfoo-ipv6additional] {
+  border: 2px solid yellow;
+}
+
+#ipvfoo-pane {
+  visibility: hidden;
+}
+
+#ipvfoo-panel:not([type="arrow"]) {
+  padding: 9px !important;
+}
