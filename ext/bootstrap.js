@@ -354,22 +354,59 @@ function insertPanel(window) {
 }
 
 function insertButton(window, panel) {
-  /* Insert URL bar icon to bring up the panel. */
-  var img = window.document.createElement('image');
-  img.id = "go-button";
-  img.className = "urlbar-icon";
-  img.addEventListener("click", function() {
+  function makeImg(size, which) {
+    var img = window.document.createElement('image');
+    img.id = "ipvfoo-" + size + "-" + which;
+    img.setAttribute("src", "resource://ipvfoo/" + size + "-" + which + ".png");
+    return img;
+  }
+  
+  var stack = window.document.createElement('stack');
+  var deck = window.document.createElement('deck');
+  stack.className = "urlbar-icon";
+  stack.appendChild(deck);
+  
+  stack.MAIN_IPV4       = 0;
+  stack.MAIN_IPV6       = 1;
+  stack.MAIN_UNKNOWN    = 2;
+  stack.ADDITIONAL_IPV4 = stack.appendChild(makeImg("small", "4"));
+  stack.ADDITIONAL_IPV6 = stack.appendChild(makeImg("small", "6"));
+  
+  ["4", "6", "q"].map(function (which) makeImg("big", which))
+                 .forEach(function(img) deck.appendChild(img));
+  
+  /* Functions to control what's visible. */
+  stack.setMain = function(which) {
+    deck.setAttribute("selectedIndex", which);
+  }
+  
+  stack.setAdditional = function(img, has) {
+    if (has)
+      img.hidden = false;
+    else
+      img.hidden = true;
+  }
+  
+  /* Set the default state of the icon. */
+  stack.setMain(stack.MAIN_UNKNOWN);
+  stack.setAdditional(stack.ADDITIONAL_IPV4, false);
+  stack.setAdditional(stack.ADDITIONAL_IPV6, false);
+  
+  var entrypoint = window.document.getElementById('go-button');
+  entrypoint.parentNode.insertBefore(stack, entrypoint);
+  
+  unload(function() {
+    stack.parentNode.removeChild(stack);
+  }, window);
+  
+  /* Add click handler. */
+  stack.addEventListener("click", function() {
     panel.hidden = false;
     panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
-    panel.openPopup(img, panel.getAttribute("position"), 0, 0, false, false);
+    panel.openPopup(stack, panel.getAttribute("position"), 0, 0, false, false);
   });
-  var entrypoint = window.document.getElementById('go-button');
-  entrypoint.parentNode.insertBefore(img, entrypoint);
-
-  unload(function() {
-    img.parentNode.removeChild(img);
-  }, window);
-  return img;
+  
+  return stack;
 }
 
 function insertStyleSheet() {
@@ -395,10 +432,9 @@ function addTabSelectHandler(window, button) {
                         .getInterface(Components.interfaces.nsIDOMWindowUtils);
 
     /* Tab was changed, so clear the current state. */
-    button.removeAttribute("ipvfoo-ipv4main");
-    button.removeAttribute("ipvfoo-ipv6main");
-    button.removeAttribute("ipvfoo-ipv4additional");
-    button.removeAttribute("ipvfoo-ipv6additional");
+    button.setMain(button.MAIN_UNKNOWN);
+    button.setAdditional(button.ADDITIONAL_IPV4, false);
+    button.setAdditional(button.ADDITIONAL_IPV6, false);
     
     /* Add state for the new tab. */
     updateButtonState();
@@ -420,16 +456,22 @@ function addTabSelectHandler(window, button) {
     if (hosts[0].wasInitialLoad) {
       if (hosts[0].address.indexOf(":") == -1) {
         button.setAttribute("ipvfoo-ipv4main", "true");
+        button.setMain(button.MAIN_IPV4);
       } else {
         button.setAttribute("ipvfoo-ipv6main", "true");
+        button.setMain(button.MAIN_IPV6);
       }
     }
     
     var additionalhosts = hosts.slice(hosts[0].wasInitialLoad ? 1 : 0);
-    if (additionalhosts.some(function(el) el.address.indexOf(":") == -1))
+    if (additionalhosts.some(function(el) el.address.indexOf(":") == -1)) {
       button.setAttribute("ipvfoo-ipv4additional", "true");
-    if (additionalhosts.some(function(el) el.address.indexOf(":") != -1))
+      button.setAdditional(button.ADDITIONAL_IPV4, true);
+    }
+    if (additionalhosts.some(function(el) el.address.indexOf(":") != -1)) {
       button.setAttribute("ipvfoo-ipv6additional", "true");
+      button.setAdditional(button.ADDITIONAL_IPV6, true);
+    }
   }
   
   function handleCacheUpdate(updatedOuterID, newentry) {
@@ -441,11 +483,10 @@ function addTabSelectHandler(window, button) {
       
     if (newentry == null) {
       /* New page: clear image state. */
-      button.removeAttribute("ipvfoo-ipv4main");
-      button.removeAttribute("ipvfoo-ipv6main");
-      button.removeAttribute("ipvfoo-ipv4additional");
-      button.removeAttribute("ipvfoo-ipv6additional");
-      updateButtonState();
+      button.setMain(button.MAIN_UNKNOWN);
+      button.setAdditional(button.ADDITIONAL_IPV4, false);
+      button.setAdditional(button.ADDITIONAL_IPV6, false);
+      //updateButtonState();
       return;
     }
     
@@ -466,9 +507,9 @@ function addTabSelectHandler(window, button) {
 
 function insertBrowserCode(window) {
   var panel = insertPanel(window);
-  var button = insertButton(window, panel);
-  
-  addTabSelectHandler(window, button);
+  var stack = insertButton(window, panel);
+
+  addTabSelectHandler(window, stack);
 
   insertStyleSheet();
 }
