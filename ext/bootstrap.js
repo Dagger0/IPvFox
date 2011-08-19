@@ -177,8 +177,9 @@ var httpRequestObserver =
 
       if (RHCache[domWinInner])
         throw "content-document-global-created: this notification is for an inner DOM "
-          + "window that has already seen content loads. This should never happen; please"
-          + "report it to me if it does.";
+          + "window that has already seen content loads. This should never happen; please "
+          + "report it to me if it does. (Note: this exception is from ipvfoo, regardless "
+          + "of what the Error Console reports it as coming from.)";
 
       var hosts = RHWaitingList[domWinOuter];
       hosts.unshift(hosts.pop());
