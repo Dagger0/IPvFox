@@ -185,7 +185,7 @@ var httpRequestObserver =
         throw "content-document-global-created: this notification is for an inner DOM "
           + "window that has already seen content loads. This should never happen; if it does, "
           + "please report it to me, preferably with a way to reproduce. (Note: this "
-          + "exception is from ipvfoo, regardless of what the Error Console reports.)";
+          + "exception is from IPvFox, regardless of what the Error Console reports.)";
 
       var hosts = RHWaitingList[domWinOuter];
       hosts.unshift(hosts.pop());
@@ -240,7 +240,7 @@ var httpRequestObserver =
 function insertPanel(window) {
   /* The panel itself. */
   var panel = window.document.createElement('panel');
-  panel.id = "ipvfoo-panel";
+  panel.id = "ipvfox-panel";
   if (window.StarUI.panel.getAttribute("type") == "arrow") {
     panel.setAttribute("type", "arrow");
     panel.setAttribute("position", "bottomcenter topright");
@@ -251,7 +251,7 @@ function insertPanel(window) {
   
   /* Add table to panel. */
   var table = panel.appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:table"));
-  table.id = "ipvfoo-table";
+  table.id = "ipvfox-table";
   
   /* Bugfix: panel shows previous contents briefly unless it's hidden when hidden. */
   panel.hidden = true;
@@ -318,14 +318,14 @@ function insertPanel(window) {
       cell.appendChild(window.document.createTextNode("No hosts seen yet."));
       cell.setAttribute("colspan", "2");
 
-      table.setAttribute("ipvfoo-nohosts", "true");
+      table.setAttribute("ipvfox-nohosts", "true");
     } 
     else {
       for (let i = 0; i < hosts.length; i++) {
         addHostRow(hosts[i].host, hosts[i].address);
       }
       
-      table.removeAttribute("ipvfoo-nohosts");
+      table.removeAttribute("ipvfox-nohosts");
     }
     
     if (DEBUG) addDebuggingInfo();
@@ -362,8 +362,8 @@ function insertPanel(window) {
 function insertButton(window, panel) {
   function makeImg(size, which) {
     var img = window.document.createElement('image');
-    img.id = "ipvfoo-" + size + "-" + which;
-    img.setAttribute("src", "resource://ipvfoo/" + size + "-" + which + ".png");
+    img.id = "ipvfox-" + size + "-" + which;
+    img.setAttribute("src", "resource://ipvfox/" + size + "-" + which + ".png");
     return img;
   }
   
@@ -421,7 +421,7 @@ function insertStyleSheet() {
               .getService(Ci.nsIStyleSheetService);
   var IOS = Cc["@mozilla.org/network/io-service;1"]
               .getService(Components.interfaces.nsIIOService);              
-  var fileURI= IOS.newURI("resource://ipvfoo/style.css", null, null);
+  var fileURI= IOS.newURI("resource://ipvfox/style.css", null, null);
   sSS.loadAndRegisterSheet(fileURI, sSS.AGENT_SHEET);
   unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
 }
@@ -461,21 +461,21 @@ function addTabSelectHandler(window, button) {
      * page itself rather than one of its resources. */
     if (hosts[0].wasInitialLoad) {
       if (hosts[0].address.indexOf(":") == -1) {
-        //button.setAttribute("ipvfoo-ipv4main", "true");
+        //button.setAttribute("ipvfox-ipv4main", "true");
         button.setMain(button.MAIN_IPV4);
       } else {
-        //button.setAttribute("ipvfoo-ipv6main", "true");
+        //button.setAttribute("ipvfox-ipv6main", "true");
         button.setMain(button.MAIN_IPV6);
       }
     }
     
     var additionalhosts = hosts.slice(hosts[0].wasInitialLoad ? 1 : 0);
     if (additionalhosts.some(function(el) el.address.indexOf(":") == -1)) {
-      //button.setAttribute("ipvfoo-ipv4additional", "true");
+      //button.setAttribute("ipvfox-ipv4additional", "true");
       button.setAdditional(button.ADDITIONAL_IPV4, true);
     }
     if (additionalhosts.some(function(el) el.address.indexOf(":") != -1)) {
-      //button.setAttribute("ipvfoo-ipv6additional", "true");
+      //button.setAttribute("ipvfox-ipv6additional", "true");
       button.setAdditional(button.ADDITIONAL_IPV6, true);
     }
   }
@@ -653,7 +653,7 @@ function startup(data, reason) {
   var alias = Services.io.newFileURI(data.installPath);
   if (!data.installPath.isDirectory())
     alias = Services.io.newURI("jar:" + alias.spec + "!/", null, null);
-  resource.setSubstitution("ipvfoo", alias);
+  resource.setSubstitution("ipvfox", alias);
 
   /* Register HTTP observer, add per-window code. */
   httpRequestObserver.register();
@@ -669,7 +669,7 @@ function shutdown(data, reason) {
   if (reason != APP_SHUTDOWN) {
     var resource = Services.io.getProtocolHandler("resource")
                               .QueryInterface(Ci.nsIResProtocolHandler);
-    resource.setSubstitution("ipvfoo", null);
+    resource.setSubstitution("ipvfox", null);
 
     httpRequestObserver.unregister();
     unload();

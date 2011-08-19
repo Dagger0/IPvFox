@@ -1,26 +1,26 @@
-#ipvfoo-table {
+#ipvfox-table {
   border-collapse: collapse;
   -moz-user-focus: normal;
   -moz-user-select: text;
 }
 
-#ipvfoo-panel table td:first-child {
+#ipvfox-panel table td:first-child {
   padding-right: 0.3em;
 }
 
-#ipvfoo-panel td.ipv6 {
+#ipvfox-panel td.ipv6 {
   color: green;
 }
 
-#ipvfoo-panel td.ipv4 {
+#ipvfox-panel td.ipv4 {
   color: red;
 }
 
-#ipvfoo-pane {
+#ipvfox-pane {
   visibility: hidden;
 }
 
-#ipvfoo-panel:not([type="arrow"]) {
+#ipvfox-panel:not([type="arrow"]) {
   padding: 6px !important;
   margin-top: 3px !important;
   margin-left: -4px !important;
