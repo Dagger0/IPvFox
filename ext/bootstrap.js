@@ -455,21 +455,21 @@ function addTabSelectHandler(window, button) {
      * page itself rather than one of its resources. */
     if (hosts[0].wasInitialLoad) {
       if (hosts[0].address.indexOf(":") == -1) {
-        button.setAttribute("ipvfoo-ipv4main", "true");
+        //button.setAttribute("ipvfoo-ipv4main", "true");
         button.setMain(button.MAIN_IPV4);
       } else {
-        button.setAttribute("ipvfoo-ipv6main", "true");
+        //button.setAttribute("ipvfoo-ipv6main", "true");
         button.setMain(button.MAIN_IPV6);
       }
     }
     
     var additionalhosts = hosts.slice(hosts[0].wasInitialLoad ? 1 : 0);
     if (additionalhosts.some(function(el) el.address.indexOf(":") == -1)) {
-      button.setAttribute("ipvfoo-ipv4additional", "true");
+      //button.setAttribute("ipvfoo-ipv4additional", "true");
       button.setAdditional(button.ADDITIONAL_IPV4, true);
     }
     if (additionalhosts.some(function(el) el.address.indexOf(":") != -1)) {
-      button.setAttribute("ipvfoo-ipv6additional", "true");
+      //button.setAttribute("ipvfoo-ipv6additional", "true");
       button.setAdditional(button.ADDITIONAL_IPV6, true);
     }
   }
