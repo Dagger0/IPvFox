@@ -350,11 +350,11 @@ function insertPanel(window) {
 
     /* Unsubscribe after the panel is closed. */
     panel.addEventListener("popuphiding", function() {
-      panel.removeEventListener("popuphiding", arguments.callee);
+      panel.removeEventListener("popuphiding", arguments.callee, false);
       RHCallbacks = RHCallbacks.filter(function(el) el != handleCacheUpdate);
       panel.hidden = true;
-    });
-  });
+    }, false);
+  }, false);
   
   return panel;
 }
@@ -410,7 +410,7 @@ function insertButton(window, panel) {
     panel.hidden = false;
     panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
     panel.openPopup(stack, panel.getAttribute("position"), 0, 0, false, false);
-  });
+  }, false);
   
   return stack;
 }
