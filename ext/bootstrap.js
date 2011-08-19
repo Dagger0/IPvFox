@@ -133,7 +133,6 @@ var httpRequestObserver =
           hosts.push(newentry);
           RHWaitingList[domWinOuter] = hosts;
         }
-      RHTest.forEach(function (el) el(domWinOuter, null));
 
         debuglog("http-on-examine-response: New page load; queuing host info for " +
           " outer window " + domWinOuter + " (current inner window is " + 
