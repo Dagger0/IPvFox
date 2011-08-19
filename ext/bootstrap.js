@@ -46,7 +46,7 @@ const LOGALLREQUESTS = 0;
 
 var RHCache = new Array();
 var RHWaitingList = new Array();
-var RHTest = new Array();
+var RHCallbacks = new Array();
 
 var httpRequestObserver =
 {
@@ -147,7 +147,7 @@ var httpRequestObserver =
           hosts.push(newentry);
           RHCache[domWinInner] = hosts;
           
-          RHTest.forEach(function (el) el(domWinOuter, newentry));
+          RHCallbacks.forEach(function (el) el(domWinOuter, newentry));
 
           debuglog("http-on-examine-response: additional load; attached host info to inner window " + domWinInner + " which is " + domWin.location);
         }
@@ -185,9 +185,9 @@ var httpRequestObserver =
       RHCache[domWinInner] = hosts;             
       
       /* Notify subscribers. */
-      RHTest.forEach(function (el) el(domWinOuter, null));
+      RHCallbacks.forEach(function (el) el(domWinOuter, null));
       hosts.forEach(function (host) {
-        RHTest.forEach(function (el) el(domWinOuter, host))
+        RHCallbacks.forEach(function (el) el(domWinOuter, host))
       });
       
       delete RHWaitingList[domWinOuter];
@@ -339,12 +339,12 @@ function insertPanel(window) {
         
       addHostRow(newentry.host, newentry.address);
     }
-    RHTest.push(handleCacheUpdate);
+    RHCallbacks.push(handleCacheUpdate);
 
     /* Unsubscribe after the panel is closed. */
     panel.addEventListener("popuphiding", function() {
       panel.removeEventListener("popuphiding", arguments.callee);
-      RHTest = RHTest.filter(function(el) el != handleCacheUpdate);
+      RHCallbacks = RHCallbacks.filter(function(el) el != handleCacheUpdate);
       panel.hidden = true;
     });
   });
@@ -475,7 +475,7 @@ function addTabSelectHandler(window, button) {
   
   function handleCacheUpdate(updatedOuterID, newentry) {
     debuglog ("Cache update handler for button: Updated ID: " +  updatedOuterID + ", hoping for " + currentTabOuterID);
-    debuglog ("By the way, there are " + RHTest.length + " handlers registered.");
+    debuglog ("By the way, there are " + RHCallbacks.length + " handlers registered.");
     
     if (updatedOuterID != currentTabOuterID)
       return;
@@ -493,9 +493,9 @@ function addTabSelectHandler(window, button) {
     updateButtonState();
   }
 
-  RHTest.push(handleCacheUpdate);
+  RHCallbacks.push(handleCacheUpdate);
   unload(function() {
-    RHTest = RHTest.filter(function(el) el != handleCacheUpdate);
+    RHCallbacks = RHCallbacks.filter(function(el) el != handleCacheUpdate);
   }, window, true);
 
   window.gBrowser.tabContainer.addEventListener("TabSelect", handler, false);
