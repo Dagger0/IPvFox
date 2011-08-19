@@ -329,7 +329,7 @@ function insertPanel(window) {
       if (updatedOuterID != domWinOuter)
         return;
           
-      if (updatedOuterID == newentry) {
+      if (newentry == null) {
         /* New page: empty table. */
         while (table.firstChild) table.removeChild(table.firstChild);
         return;
