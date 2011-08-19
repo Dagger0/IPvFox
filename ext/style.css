@@ -4,11 +4,6 @@
   -moz-user-select: text;
 }
 
-#ipvfoo-panel table:not([ipvfoo-nohosts]) td {
-  /*border: 1px solid black;*/
-  /*padding: 20px 2px;*/
-}
-
 #ipvfoo-panel table td:first-child {
   padding-right: 0.3em;
 }
@@ -21,26 +16,12 @@
   color: red;
 }
 
-#go-button[ipvfoo-ipv4main] {
-  background: red;
-}
-
-#go-button[ipvfoo-ipv6main] {
-  background: green;
-}
-
-#go-button[ipvfoo-ipv4additional] {
-  border: 2px solid cyan;
-}
-
-#go-button[ipvfoo-ipv6additional] {
-  border: 2px solid yellow;
-}
-
 #ipvfoo-pane {
   visibility: hidden;
 }
 
 #ipvfoo-panel:not([type="arrow"]) {
-  padding: 9px !important;
+  padding: 6px !important;
+  margin-top: 3px !important;
+  margin-left: -4px !important;
 }
