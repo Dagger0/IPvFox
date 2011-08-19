@@ -80,7 +80,7 @@ var httpRequestObserver =
         return;
       }
 
-      if (LOGALLREQUESTS)
+      if (DEBUG || LOGALLREQUESTS)
         logmsg("http-on-examine-response: Loading " + channel.URI.spec + " (" + channel.remoteAddress + ")");
       
       /* Fetch DOM window */
