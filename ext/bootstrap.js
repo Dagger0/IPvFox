@@ -58,6 +58,7 @@ var httpRequestObserver =
              + ", LOAD_INITIAL_DOCUMENT_URI: " + (channel.loadFlags & Ci.nsIChannel.LOAD_INITIAL_DOCUMENT_URI)
              + "), top window: " + (originalWin == originalWin.top) 
              + ", is redirect: " + (channel.URI.spec != channel.originalURI.spec)
+             + ", is for download: " + (channel.channelIsForDownload)
              + ", loadGroup: " + (channel.loadGroup) 
              + ", groupObserver: " + (channel.loadGroup && channel.loadGroup.groupObserver)
              + ", owner: " + (channel.owner)
