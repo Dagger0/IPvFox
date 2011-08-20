@@ -379,7 +379,7 @@ function insertButton(window, panel) {
   stack.setAdditional(stack.ADDITIONAL_IPV4, false);
   stack.setAdditional(stack.ADDITIONAL_IPV6, false);
   
-  var entrypoint = window.document.getElementById('go-button');
+  var entrypoint = window.document.getElementById('star-button');
   entrypoint.parentNode.insertBefore(stack, entrypoint);
   
   unload(function() {
