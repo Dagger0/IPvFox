@@ -59,13 +59,13 @@ var httpRequestObserver =
   observe: function(subject, topic, data) {
     function showDebugInfo() {
       if (!DEBUG) return;
-      debuglog("Flags: " + channel.loadFlags 
+      debuglog("Flags: " + channel.loadFlags
              + " (has LOAD_DOCUMENT_URI: " + (channel.loadFlags & Ci.nsIChannel.LOAD_DOCUMENT_URI)
              + ", LOAD_INITIAL_DOCUMENT_URI: " + (channel.loadFlags & Ci.nsIChannel.LOAD_INITIAL_DOCUMENT_URI)
-             + "), top window: " + (originalWin == originalWin.top) 
+             + "), top window: " + (originalWin == originalWin.top)
              + ", is redirect: " + (channel.URI.spec != channel.originalURI.spec)
              + ", is for download: " + (channel.channelIsForDownload)
-             + ", loadGroup: " + (channel.loadGroup) 
+             + ", loadGroup: " + (channel.loadGroup)
              + ", groupObserver: " + (channel.loadGroup && channel.loadGroup.groupObserver)
              + ", owner: " + (channel.owner)
              + ", windows: " + domWinInner + " (inner) " + domWinOuter + " (outer)"
@@ -78,7 +78,7 @@ var httpRequestObserver =
       channel.QueryInterface(Components.interfaces.nsIHttpChannel);
       channel.QueryInterface(Components.interfaces.nsIHttpChannelInternal);
       
-      /* remoteAddress is randomly not available sometimes. 
+      /* remoteAddress is randomly not available sometimes.
          Check, and mention on the console if it's not. */
       try {
         channel.remoteAddress;
@@ -86,7 +86,7 @@ var httpRequestObserver =
         logmsg("http-on-examine-respose: remote address was not available for load of " + channel.URI.spec + ".");
         return;
       }
-
+      
       if (DEBUG || LOGALLREQUESTS)
         logmsg("http-on-examine-response: Loading " + channel.URI.spec + " (" + channel.remoteAddress + ")");
       
@@ -105,27 +105,27 @@ var httpRequestObserver =
                             .getInterface(Components.interfaces.nsIDOMWindowUtils);
         var domWinInner = domWinUtils.currentInnerWindowID;
         var domWinOuter = domWinUtils.outerWindowID;
-  
+        
         var originalWin = nC.getInterface(Components.interfaces.nsIDOMWindow);
       } catch(ex) { /* Load is from non-DOM source -- RSS feeds, EM etc */
         return;
       }
       
       showDebugInfo();
-
+      
       /* Detect new page loads. These happen before their own DOM is created, so
          they have domWinInner = the previous document loaded in the tab. */
       if (channel.loadFlags & Ci.nsIChannel.LOAD_INITIAL_DOCUMENT_URI)
         if (originalWin == originalWin.top)
           var isNewPage = true;
-
+      
       /* Create host entry. */
-      var newentry = { 
-        host: channel.URI.prePath, 
+      var newentry = {
+        host: channel.URI.prePath,
         address: channel.remoteAddress,
         wasInitialLoad: isNewPage,
       }
-
+      
       if (isNewPage) {
         /* New page load: inner window id will be wrong. Wait around until we get a
            content-document-global-created for the same outer window, which will
@@ -140,28 +140,28 @@ var httpRequestObserver =
           hosts.push(newentry);
           RHWaitingList[domWinOuter] = hosts;
         }
-
+        
         debuglog("http-on-examine-response: New page load; queuing host info for " +
-          " outer window " + domWinOuter + " (current inner window is " + 
+          " outer window " + domWinOuter + " (current inner window is " +
           domWinInner + " containing " + domWin.location + ")");
       } else {
         /* Not new load (CSS, image, etc): inner window id is right. */
         var hosts = new Array();
         if (RHCache[domWinInner])
           hosts = RHCache[domWinInner];
-
+        
         if (!hosts.some(function(r) r.host == newentry.host && r.address == newentry.address)) {
           hosts.push(newentry);
           RHCache[domWinInner] = hosts;
           
           RHCallbacks.forEach(function (el) el(domWinOuter, newentry));
-
+          
           debuglog("http-on-examine-response: additional load; attached host info to inner window " + domWinInner + " which is " + domWin.location);
         }
         
       }
     }
-
+    
     else if (topic == "content-document-global-created") {
       var domWin = subject;
       var domWinUtils = domWin.top
@@ -170,26 +170,26 @@ var httpRequestObserver =
       var domWinInner = domWinUtils.currentInnerWindowID;
       var domWinOuter = domWinUtils.outerWindowID;
       
-      debuglog("content-document-global-created: window IDs: " 
+      debuglog("content-document-global-created: window IDs: "
         + domWinInner + " (inner) "
         + domWinOuter + " (outer), "
         + "location: " + domWin.location);
         
-      if (!RHWaitingList[domWinOuter]) 
+      if (!RHWaitingList[domWinOuter])
         return;
       
       debuglog("content-document-global-created: "
         + "waiting list: " + RHWaitingList[domWinOuter].length);
-
+      
       if (RHCache[domWinInner])
         throw "content-document-global-created: this notification is for an inner DOM "
           + "window that has already seen content loads. This should never happen; if it does, "
           + "please report it to me, preferably with a way to reproduce. (Note: this "
           + "exception is from IPvFox, regardless of what the Error Console reports.)";
-
+      
       var hosts = RHWaitingList[domWinOuter];
       hosts.unshift(hosts.pop());
-      RHCache[domWinInner] = hosts;             
+      RHCache[domWinInner] = hosts;
       
       /* Notify subscribers. */
       RHCallbacks.forEach(function (el) el(domWinOuter, null));
@@ -211,24 +211,24 @@ var httpRequestObserver =
     else if (topic == "outer-window-destroyed") {
       var domWinOuter = subject.QueryInterface(Components.interfaces.nsISupportsPRUint64)
                                .data;
-                               
+      
       delete RHWaitingList[domWinOuter];
       debuglog("outer-window-destroyed: " + domWinOuter);
     }
   },
-
+  
   get observerService() {
     return Components.classes["@mozilla.org/observer-service;1"]
                      .getService(Components.interfaces.nsIObserverService);
   },
-
+  
   register: function() {
     this.observerService.addObserver(this, "http-on-examine-response", false);
     this.observerService.addObserver(this, "content-document-global-created", false);
     this.observerService.addObserver(this, "inner-window-destroyed", false);
     this.observerService.addObserver(this, "outer-window-destroyed", false);
   },
-
+  
   unregister: function() {
     this.observerService.removeObserver(this, "http-on-examine-response");
     this.observerService.removeObserver(this, "content-document-global-created");
@@ -255,8 +255,8 @@ function insertPanel(window) {
   
   /* Bugfix: panel shows previous contents briefly unless it's hidden when hidden. */
   panel.hidden = true;
-
-  /* Bugfix: the panel needs to have content initially, otherwise the arrow shows up 
+  
+  /* Bugfix: the panel needs to have content initially, otherwise the arrow shows up
      in the upper-left rather than the upper-right the first time it is shown. */
   table.appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:tr"))
        .appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td"))
@@ -269,7 +269,7 @@ function insertPanel(window) {
   unload(function() {
     panel.parentNode.removeChild(panel);
   }, window);
-
+  
   /* Fill out the table when popup is shown. */
   panel.addEventListener("popupshowing", function() {
     function addHostRow(hostname, address) {
@@ -279,12 +279,12 @@ function insertPanel(window) {
      
       cell1.appendChild(window.document.createTextNode(hostname));
       cell2.appendChild(window.document.createTextNode(address));
-
+      
       if (address.indexOf(":") != -1)
         cell2.className = "ipv6";
       else
         cell2.className = "ipv4";
-
+      
       row.appendChild(cell1);
       row.appendChild(cell2);
       table.appendChild(row);
@@ -293,7 +293,7 @@ function insertPanel(window) {
     function addDebuggingInfo() {
       function addRow(content) {
         var cell = table.appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:tr"))
-                        .appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td"));                
+                        .appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td"));
         cell.appendChild(window.document.createTextNode(content));
         cell.setAttribute("colspan", "2");
       }
@@ -309,17 +309,17 @@ function insertPanel(window) {
     var domWinOuter = domWinUtils.outerWindowID;
     
     var hosts = RHCache[domWinInner];
-
+    
     while (table.firstChild) table.removeChild(table.firstChild);
-
+    
     if (typeof(hosts) === 'undefined') {
       var cell = table.appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:tr"))
                       .appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td"));
       cell.appendChild(window.document.createTextNode("No hosts seen yet."));
       cell.setAttribute("colspan", "2");
-
+      
       table.setAttribute("ipvfox-nohosts", "true");
-    } 
+    }
     else {
       for (let i = 0; i < hosts.length; i++) {
         addHostRow(hosts[i].host, hosts[i].address);
@@ -341,13 +341,13 @@ function insertPanel(window) {
         return;
       }
       
-      debuglog("Host list update: got new cache entry " 
+      debuglog("Host list update: got new cache entry "
         + newentry.host + "/" + newentry.address);
         
       addHostRow(newentry.host, newentry.address);
     }
     RHCallbacks.push(handleCacheUpdate);
-
+    
     /* Unsubscribe after the panel is closed. */
     panel.addEventListener("popuphiding", function() {
       panel.removeEventListener("popuphiding", arguments.callee, false);
@@ -420,7 +420,7 @@ function insertStyleSheet() {
   var sSS = Cc["@mozilla.org/content/style-sheet-service;1"]
               .getService(Ci.nsIStyleSheetService);
   var IOS = Cc["@mozilla.org/network/io-service;1"]
-              .getService(Components.interfaces.nsIIOService);              
+              .getService(Components.interfaces.nsIIOService);
   var fileURI= IOS.newURI("resource://ipvfox/res/style.css", null, null);
   sSS.loadAndRegisterSheet(fileURI, sSS.AGENT_SHEET);
   unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
@@ -436,7 +436,7 @@ function addTabSelectHandler(window, button) {
     var domWin  = window.gBrowser.mCurrentBrowser.contentWindow;
     domWinUtils = domWin.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                         .getInterface(Components.interfaces.nsIDOMWindowUtils);
-
+    
     /* Tab was changed, so clear the current state. */
     button.setMain(button.MAIN_UNKNOWN);
     button.setAdditional(button.ADDITIONAL_IPV4, false);
@@ -450,7 +450,7 @@ function addTabSelectHandler(window, button) {
     currentTabOuterID = domWinUtils.outerWindowID;
     debuglog ("TabSelect handler: set current outer window ID to " + domWinUtils.outerWindowID);
   }
-
+  
   function updateButtonState() {
     var hosts = RHCache[domWinUtils.currentInnerWindowID];
   
@@ -499,12 +499,12 @@ function addTabSelectHandler(window, button) {
     // TODO: Should throttle updates.
     updateButtonState();
   }
-
+  
   RHCallbacks.push(handleCacheUpdate);
   unload(function() {
     RHCallbacks = RHCallbacks.filter(function(el) el != handleCacheUpdate);
   }, window, true);
-
+  
   window.gBrowser.tabContainer.addEventListener("TabSelect", handler, false);
   unload(function() {
     window.gBrowser.tabContainer.removeEventListener("TabSelect", handler, false);
@@ -514,9 +514,9 @@ function addTabSelectHandler(window, button) {
 function insertBrowserCode(window) {
   var panel = insertPanel(window);
   var stack = insertButton(window, panel);
-
+  
   addTabSelectHandler(window, stack);
-
+  
   insertStyleSheet();
 }
 
@@ -547,7 +547,7 @@ function watchWindows(callback) {
     //}
     //catch(ex) {}
   }
-
+  
   // Wait for the window to finish loading before running the callback
   function runOnLoad(window) {
     // Listen for one load event before checking the window type
@@ -556,7 +556,7 @@ function watchWindows(callback) {
       watcher(window);
     }, false);
   }
-
+  
   // Add functionality to existing windows
   let windows = Services.wm.getEnumerator(null);
   while (windows.hasMoreElements()) {
@@ -568,14 +568,14 @@ function watchWindows(callback) {
     else
       runOnLoad(window);
   }
-
+  
   // Watch for new browser windows opening then wait for it to load
   function windowWatcher(subject, topic) {
     if (topic == "domwindowopened")
       runOnLoad(subject);
   }
   Services.ww.registerNotification(windowWatcher);
-
+  
   // Make sure to stop watching for windows if we're unloading
   unload(function() Services.ww.unregisterNotification(windowWatcher));
 }
@@ -600,19 +600,19 @@ function unload(callback, container, callanyway) {
   let unloaders = unload.unloaders;
   if (unloaders == null)
     unloaders = unload.unloaders = [];
-
+  
   // Calling with no arguments runs all the unloader callbacks
   if (callback == null) {
     unloaders.slice().forEach(function(unloader) unloader());
     unloaders.length = 0;
     return;
   }
-
+  
   // The callback is bound to the lifetime of the container if we have one
   if (container != null) {
     // Remove the unloader when the container unloads
     container.addEventListener("unload", removeUnloader, false);
-
+    
     // Wrap the callback to additionally remove the unload listener
     let origCallback = callback;
     callback = function() {
@@ -620,7 +620,7 @@ function unload(callback, container, callanyway) {
       origCallback();
     }
   }
-
+  
   // Wrap the callback in a function that ignores failures
   function unloader() {
 //    try {
@@ -629,7 +629,7 @@ function unload(callback, container, callanyway) {
 //    catch(ex) {}
   }
   unloaders.push(unloader);
-
+  
   // Provide a way to remove the unloader
   function removeUnloader() {
     // If callanyway = true, call the unloader even though the thing it works on
@@ -654,7 +654,7 @@ function startup(data, reason) {
   if (!data.installPath.isDirectory())
     alias = Services.io.newURI("jar:" + alias.spec + "!/", null, null);
   resource.setSubstitution("ipvfox", alias);
-
+  
   /* Register HTTP observer, add per-window code. */
   httpRequestObserver.register();
   watchWindows(insertBrowserCode);
@@ -670,7 +670,7 @@ function shutdown(data, reason) {
     var resource = Services.io.getProtocolHandler("resource")
                               .QueryInterface(Ci.nsIResProtocolHandler);
     resource.setSubstitution("ipvfox", null);
-
+    
     httpRequestObserver.unregister();
     unload();
   }
