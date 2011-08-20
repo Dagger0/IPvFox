@@ -1,0 +1,7 @@
+The icons in res/small-*.png and res/big-*.png are derived from sprites.png
+from the Chrome extension "IPvFoo", available from
+   https://code.google.com/p/ipvfoo/
+
+The original code for windowWatcher() and unload() is from the
+examples/shiftAllBrowsers branch of Mardak's restartless, available from
+   https://github.com/Mardak/restartless/
