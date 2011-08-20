@@ -403,17 +403,6 @@ function insertButton(window, panel) {
   return stack;
 }
 
-function insertStyleSheet() {
-  /* Insert stylesheet */
-  var sSS = Cc["@mozilla.org/content/style-sheet-service;1"]
-              .getService(Ci.nsIStyleSheetService);
-  var IOS = Cc["@mozilla.org/network/io-service;1"]
-              .getService(Components.interfaces.nsIIOService);
-  var fileURI= IOS.newURI("resource://ipvfox/res/style.css", null, null);
-  sSS.loadAndRegisterSheet(fileURI, sSS.AGENT_SHEET);
-  unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
-}
-
 function addIconUpdateHandlers(window, button) {
   var currentTabInnerID;
   var currentTabOuterID;
@@ -500,8 +489,6 @@ function insertBrowserCode(window) {
   var stack = insertButton(window, panel);
   
   addIconUpdateHandlers(window, stack);
-  
-  insertStyleSheet();
 }
 
 function logmsg(aMessage) {
@@ -624,10 +611,19 @@ function unload(callback, container, callanyway) {
   return removeUnloader;
 }
 
-/**
- * Handle the add-on being activated on install/enable
- */
-function startup(data, reason) {
+function insertStyleSheet() {
+  /* Insert stylesheet */
+  var sSS = Cc["@mozilla.org/content/style-sheet-service;1"]
+              .getService(Ci.nsIStyleSheetService);
+  var IOS = Cc["@mozilla.org/network/io-service;1"]
+              .getService(Components.interfaces.nsIIOService);
+  var fileURI= IOS.newURI("resource://ipvfox/res/style.css", null, null);
+
+  sSS.loadAndRegisterSheet(fileURI, sSS.AGENT_SHEET);
+  unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
+}
+
+function registerResourceURI(data) {
   /* Register our resource:// URL.
    * http://starkravingfinkle.org/blog/2011/01/restartless-add-ons-more-resources/ */
   var resource = Services.io.getProtocolHandler("resource")
@@ -635,9 +631,18 @@ function startup(data, reason) {
   var alias = Services.io.newFileURI(data.installPath);
   if (!data.installPath.isDirectory())
     alias = Services.io.newURI("jar:" + alias.spec + "!/", null, null);
-  resource.setSubstitution("ipvfox", alias);
   
+  resource.setSubstitution("ipvfox", alias);
+  unload(function() resource.setSubstitution("ipvfox", null));
+}
+
+/**
+ * Handle the add-on being activated on install/enable
+ */
+function startup(data, reason) {
   /* Register HTTP observer, add per-window code. */
+  registerResourceURI(data);
+  insertStyleSheet();
   httpRequestObserver.register();
   watchWindows(insertBrowserCode);
   debuglog("Registered.");
@@ -649,10 +654,6 @@ function startup(data, reason) {
 function shutdown(data, reason) {
   // Clean up with unloaders when we're deactivating
   if (reason != APP_SHUTDOWN) {
-    var resource = Services.io.getProtocolHandler("resource")
-                              .QueryInterface(Ci.nsIResProtocolHandler);
-    resource.setSubstitution("ipvfox", null);
-    
     httpRequestObserver.unregister();
     unload();
   }
