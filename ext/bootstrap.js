@@ -64,7 +64,7 @@ var httpRequestObserver =
       try {
         channel.remoteAddress;
       } catch (ex) {
-        logmsg("http-on-examine-respose: remote address was not available for load of " + channel.URI.spec + ".");
+        logmsg("http-on-examine-response: remote address was not available for load of " + channel.URI.spec + ".");
         return;
       }
       
