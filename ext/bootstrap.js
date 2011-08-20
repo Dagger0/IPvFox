@@ -31,6 +31,10 @@ Cu.import("resource://gre/modules/Services.jsm");
 const DEBUG = 0;
 const LOGALLREQUESTS = 0;
 
+const AF_UNSPEC = 0;
+const AF_INET = 2;
+const AF_INET6 = 23;
+
 var RHCache = new Array();
 var RHWaitingList = new Array();
 var RHCallbacks = new Array();
@@ -104,8 +108,8 @@ var httpRequestObserver =
       var newentry = {
         host: channel.URI.prePath,
         address: channel.remoteAddress,
-        wasInitialLoad: isNewPage,
         isMainHost: false,
+        family: (channel.remoteAddress.indexOf(":") == -1 ? AF_INET : AF_INET6),
       }
       
       if (isNewPage) {
@@ -255,15 +259,15 @@ function insertPanel(window) {
   
   /* Fill out the table when popup is shown. */
   panel.addEventListener("popupshowing", function() {
-    function addHostRow(hostname, address) {
+    function addHostRow(host) {
       var row   = window.document.createElementNS("http://www.w3.org/1999/xhtml","html:tr");
       var cell1 = window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td");
       var cell2 = window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td");
      
-      cell1.appendChild(window.document.createTextNode(hostname));
-      cell2.appendChild(window.document.createTextNode(address));
+      cell1.appendChild(window.document.createTextNode(host.host));
+      cell2.appendChild(window.document.createTextNode(host.address));
       
-      if (address.indexOf(":") != -1)
+      if (host.family == AF_INET6)
         cell2.className = "ipv6";
       else
         cell2.className = "ipv4";
@@ -305,7 +309,7 @@ function insertPanel(window) {
     }
     else {
       for (let i = 0; i < hosts.length; i++) {
-        addHostRow(hosts[i].host, hosts[i].address);
+        addHostRow(hosts[i]);
       }
       
       table.removeAttribute("ipvfox-nohosts");
@@ -327,7 +331,7 @@ function insertPanel(window) {
       debuglog("Host list update: got new cache entry "
         + newentry.host + "/" + newentry.address);
         
-      addHostRow(newentry.host, newentry.address);
+      addHostRow(newentry);
     }
     RHCallbacks.push(handleCacheUpdate);
     
@@ -355,31 +359,32 @@ function insertButton(window, panel) {
   stack.className = "urlbar-icon";
   stack.appendChild(deck);
   
-  stack.MAIN_IPV4       = 0;
-  stack.MAIN_IPV6       = 1;
-  stack.MAIN_UNKNOWN    = 2;
-  stack.ADDITIONAL_IPV4 = stack.appendChild(makeImg("small", "4"));
-  stack.ADDITIONAL_IPV6 = stack.appendChild(makeImg("small", "6"));
+  // Values are from the appropriate selectedIndex for the <deck> element
+  var mainMap = new Object();
+  mainMap[AF_UNSPEC] = 2;
+  mainMap[AF_INET]   = 0;
+  mainMap[AF_INET6]  = 1;
   
   ["4", "6", "q"].map(function (which) makeImg("big", which))
                  .forEach(function(img) deck.appendChild(img));
   
+  var additionalMap = new Object();
+  additionalMap[AF_INET]  = stack.appendChild(makeImg("small", "4"));
+  additionalMap[AF_INET6] = stack.appendChild(makeImg("small", "6"));
+  
   /* Functions to control what's visible. */
-  stack.setMain = function(which) {
-    deck.setAttribute("selectedIndex", which);
+  stack.setMain = function(family) {
+    deck.setAttribute("selectedIndex", mainMap[family]);
   }
   
-  stack.setAdditional = function(img, has) {
-    if (has)
-      img.hidden = false;
-    else
-      img.hidden = true;
+  stack.setAdditional = function(family, has) {
+    additionalMap[family].hidden = (has? 0 : 1);
   }
   
   /* Set the default state of the icon. */
-  stack.setMain(stack.MAIN_UNKNOWN);
-  stack.setAdditional(stack.ADDITIONAL_IPV4, false);
-  stack.setAdditional(stack.ADDITIONAL_IPV6, false);
+  stack.setMain(AF_UNSPEC);
+  stack.setAdditional(AF_INET, false);
+  stack.setAdditional(AF_INET6, false);
   
   var entrypoint = window.document.getElementById('star-button');
   entrypoint.parentNode.insertBefore(stack, entrypoint);
@@ -430,9 +435,9 @@ function addIconUpdateHandlers(window, button) {
     setCurrentTabIDs();
     
     /* Tab was changed, so clear the current state. */
-    button.setMain(button.MAIN_UNKNOWN);
-    button.setAdditional(button.ADDITIONAL_IPV4, false);
-    button.setAdditional(button.ADDITIONAL_IPV6, false);
+    button.setMain(AF_UNSPEC);
+    button.setAdditional(AF_INET, false);
+    button.setAdditional(AF_INET6, false);
     
     /* Set state appropriately for the new tab. */
     var hosts = RHCache[currentTabInnerID];
@@ -440,20 +445,17 @@ function addIconUpdateHandlers(window, button) {
     if (typeof(hosts) === 'undefined')
       return;
     
-    /* The first entry is handled differently if it was an initial load: this is the
-     * page itself rather than one of its resources. */
-    if (hosts[0].wasInitialLoad) {
-      if (hosts[0].address.indexOf(":") == -1)
-        button.setMain(button.MAIN_IPV4);
-      else
-        button.setMain(button.MAIN_IPV6);
+    /* The first entry may not always be the main host,
+       if e.g. that page came from cache. */
+    if (hosts[0].isMainHost) {
+      button.setMain(hosts[0].family);
     }
     
-    var additionalhosts = hosts.slice(hosts[0].wasInitialLoad ? 1 : 0);
-    if (additionalhosts.some(function(el) el.address.indexOf(":") == -1))
-      button.setAdditional(button.ADDITIONAL_IPV4, true);
-    if (additionalhosts.some(function(el) el.address.indexOf(":") != -1))
-      button.setAdditional(button.ADDITIONAL_IPV6, true);
+    var additionalhosts = hosts.slice(hosts[0].isMainHost ? 1 : 0);
+    if (additionalhosts.some(function(el) el.family == AF_INET))
+      button.setAdditional(AF_INET, true);
+    if (additionalhosts.some(function(el) el.family == AF_INET6))
+      button.setAdditional(AF_INET6, true);
   }
   
   function handleCacheUpdate(updatedOuterID, newentry) {
@@ -465,22 +467,16 @@ function addIconUpdateHandlers(window, button) {
     
     if (newentry == null) {
       /* New page: clear image state. */
-      button.setMain(button.MAIN_UNKNOWN);
-      button.setAdditional(button.ADDITIONAL_IPV4, false);
-      button.setAdditional(button.ADDITIONAL_IPV6, false);
+      button.setMain(AF_UNSPEC);
+      button.setAdditional(AF_INET, false);
+      button.setAdditional(AF_INET6, false);
       return;
     }
     
     if (newentry.isMainHost) {
-      if (newentry.address.indexOf(":") == -1)
-        button.setMain(button.MAIN_IPV4);
-      else
-        button.setMain(button.MAIN_IPV6);
+      button.setMain(newentry.family);
     } else {
-      if (newentry.address.indexOf(":") == -1)
-        button.setAdditional(button.ADDITIONAL_IPV4, true);
-      else
-        button.setAdditional(button.ADDITIONAL_IPV6, true);
+      button.setAdditional(newentry.family, true);
     }
   }
   
