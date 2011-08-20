@@ -105,6 +105,7 @@ var httpRequestObserver =
         host: channel.URI.prePath,
         address: channel.remoteAddress,
         wasInitialLoad: isNewPage,
+        isMainHost: false,
       }
       
       if (isNewPage) {
@@ -170,6 +171,7 @@ var httpRequestObserver =
       
       var hosts = RHWaitingList[domWinOuter];
       hosts.unshift(hosts.pop());
+      hosts[0].isMainHost = true;
       RHCache[domWinInner] = hosts;
       
       /* Notify subscribers. */
@@ -407,58 +409,51 @@ function insertStyleSheet() {
   unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
 }
 
-function addTabSelectHandler(window, button) {
+function addIconUpdateHandlers(window, button) {
+  var currentTabInnerID;
   var currentTabOuterID;
-  var domWinUtils;
-    
-  function handler(evt) {
-    debuglog("TabSelect handler: running")
-    /* Fetch a nsIDomWindowUtils. */
+  
+  function setCurrentTabIDs() {
+    /* Fetch the nsIDomWindowUtils. */
     var domWin  = window.gBrowser.mCurrentBrowser.contentWindow;
     domWinUtils = domWin.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                         .getInterface(Components.interfaces.nsIDOMWindowUtils);
+    
+    currentTabInnerID = domWinUtils.currentInnerWindowID;
+    currentTabOuterID = domWinUtils.outerWindowID;
+    
+    debuglog ("TabSelect handler: set current outer window ID to " + domWinUtils.outerWindowID);
+  }
+  
+  function handler(evt) {
+    debuglog("TabSelect handler: running")
+    setCurrentTabIDs();
     
     /* Tab was changed, so clear the current state. */
     button.setMain(button.MAIN_UNKNOWN);
     button.setAdditional(button.ADDITIONAL_IPV4, false);
     button.setAdditional(button.ADDITIONAL_IPV6, false);
     
-    /* Add state for the new tab. */
-    updateButtonState();
+    /* Set state appropriately for the new tab. */
+    var hosts = RHCache[currentTabInnerID];
     
-    /* Store the outer ID. Whenever the cache changes, handleCacheUpdate() is
-       called with the relevent outer ID, which is then compares with this one. */
-    currentTabOuterID = domWinUtils.outerWindowID;
-    debuglog ("TabSelect handler: set current outer window ID to " + domWinUtils.outerWindowID);
-  }
-  
-  function updateButtonState() {
-    var hosts = RHCache[domWinUtils.currentInnerWindowID];
-  
     if (typeof(hosts) === 'undefined')
       return;
     
     /* The first entry is handled differently if it was an initial load: this is the
      * page itself rather than one of its resources. */
     if (hosts[0].wasInitialLoad) {
-      if (hosts[0].address.indexOf(":") == -1) {
-        //button.setAttribute("ipvfox-ipv4main", "true");
+      if (hosts[0].address.indexOf(":") == -1)
         button.setMain(button.MAIN_IPV4);
-      } else {
-        //button.setAttribute("ipvfox-ipv6main", "true");
+      else
         button.setMain(button.MAIN_IPV6);
-      }
     }
     
     var additionalhosts = hosts.slice(hosts[0].wasInitialLoad ? 1 : 0);
-    if (additionalhosts.some(function(el) el.address.indexOf(":") == -1)) {
-      //button.setAttribute("ipvfox-ipv4additional", "true");
+    if (additionalhosts.some(function(el) el.address.indexOf(":") == -1))
       button.setAdditional(button.ADDITIONAL_IPV4, true);
-    }
-    if (additionalhosts.some(function(el) el.address.indexOf(":") != -1)) {
-      //button.setAttribute("ipvfox-ipv6additional", "true");
+    if (additionalhosts.some(function(el) el.address.indexOf(":") != -1))
       button.setAdditional(button.ADDITIONAL_IPV6, true);
-    }
   }
   
   function handleCacheUpdate(updatedOuterID, newentry) {
@@ -467,19 +462,31 @@ function addTabSelectHandler(window, button) {
     
     if (updatedOuterID != currentTabOuterID)
       return;
-      
+    
     if (newentry == null) {
       /* New page: clear image state. */
       button.setMain(button.MAIN_UNKNOWN);
       button.setAdditional(button.ADDITIONAL_IPV4, false);
       button.setAdditional(button.ADDITIONAL_IPV6, false);
-      //updateButtonState();
       return;
     }
     
-    // TODO: Should throttle updates.
-    updateButtonState();
+    if (newentry.isMainHost) {
+      if (newentry.address.indexOf(":") == -1)
+        button.setMain(button.MAIN_IPV4);
+      else
+        button.setMain(button.MAIN_IPV6);
+    } else {
+      if (newentry.address.indexOf(":") == -1)
+        button.setAdditional(button.ADDITIONAL_IPV4, true);
+      else
+        button.setAdditional(button.ADDITIONAL_IPV6, true);
+    }
   }
+  
+  /* We need the current outer tab ID to be set before
+     the user has switched tabs for the first time. */
+  setCurrentTabIDs();
   
   RHCallbacks.push(handleCacheUpdate);
   unload(function() {
@@ -496,7 +503,7 @@ function insertBrowserCode(window) {
   var panel = insertPanel(window);
   var stack = insertButton(window, panel);
   
-  addTabSelectHandler(window, stack);
+  addIconUpdateHandlers(window, stack);
   
   insertStyleSheet();
 }
