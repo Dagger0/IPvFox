@@ -517,16 +517,15 @@ function debuglog(aMessage) {
 
 
 function watchWindows(callback) {
-  // Wrap the callback in a function that ignores failures
+  // This function originally wrapped callback() in a try/catch block
+  // to supress errors, but it's more useful if those errors are
+  // actually reported rather than silently eaten.
   function watcher(window) {
-    //try {
-      // Now that the window has loaded, only handle browser windows
-      let {documentElement} = window.document;
-      if (documentElement.getAttribute("windowtype") == "navigator:browser"
-          || documentElement.getAttribute("windowtype") == "mail:3pane")
-        callback(window);
-    //}
-    //catch(ex) {}
+    // Now that the window has loaded, only handle browser windows
+    let {documentElement} = window.document;
+    if (documentElement.getAttribute("windowtype") == "navigator:browser"
+        || documentElement.getAttribute("windowtype") == "mail:3pane")
+      callback(window);
   }
   
   // Wait for the window to finish loading before running the callback
@@ -602,12 +601,11 @@ function unload(callback, container, callanyway) {
     }
   }
   
-  // Wrap the callback in a function that ignores failures
+  // This function originally wrapped callback() in a try/catch block
+  // to supress errors, but it's more useful if those errors are
+  // actually reported rather than silently eaten.
   function unloader() {
-//    try {
-      callback();
-//    }
-//    catch(ex) {}
+    callback();
   }
   unloaders.push(unloader);
   
