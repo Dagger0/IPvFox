@@ -523,7 +523,7 @@ function insertBrowserCode(window) {
 function logmsg(aMessage) {
   var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
                                  .getService(Components.interfaces.nsIConsoleService);
-  consoleService.logStringMessage("HTTP request: " + aMessage);
+  consoleService.logStringMessage("IPvFox: " + aMessage);
 }
 
 function debuglog(aMessage) {
@@ -531,7 +531,7 @@ function debuglog(aMessage) {
   
   var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
                                  .getService(Components.interfaces.nsIConsoleService);
-  consoleService.logStringMessage("HTTP request: " + aMessage);
+  consoleService.logStringMessage("IPvFox: " + aMessage);
 }
 
 
