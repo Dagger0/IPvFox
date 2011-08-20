@@ -363,7 +363,7 @@ function insertButton(window, panel) {
   function makeImg(size, which) {
     var img = window.document.createElement('image');
     img.id = "ipvfox-" + size + "-" + which;
-    img.setAttribute("src", "resource://ipvfox/" + size + "-" + which + ".png");
+    img.setAttribute("src", "resource://ipvfox/res/" + size + "-" + which + ".png");
     return img;
   }
   
@@ -421,7 +421,7 @@ function insertStyleSheet() {
               .getService(Ci.nsIStyleSheetService);
   var IOS = Cc["@mozilla.org/network/io-service;1"]
               .getService(Components.interfaces.nsIIOService);              
-  var fileURI= IOS.newURI("resource://ipvfox/style.css", null, null);
+  var fileURI= IOS.newURI("resource://ipvfox/res/style.css", null, null);
   sSS.loadAndRegisterSheet(fileURI, sSS.AGENT_SHEET);
   unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
 }
