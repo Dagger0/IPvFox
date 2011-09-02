@@ -498,11 +498,7 @@ function logmsg(aMessage) {
 }
 
 function debuglog(aMessage) {
-  if (!DEBUG) return;
-  
-  var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-                                 .getService(Components.interfaces.nsIConsoleService);
-  consoleService.logStringMessage("IPvFox: " + aMessage);
+  if (DEBUG) logmsg(aMessage);
 }
 
 
