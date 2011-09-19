@@ -482,6 +482,11 @@ function addIconUpdateHandlers(window, button) {
   unload(function() {
     window.gBrowser.tabContainer.removeEventListener("TabSelect", handler, false);
   }, window);
+  
+  window.gBrowser.addEventListener("pageshow", handler, false);
+  unload(function() {
+    window.gBrowser.removeEventListener("pageshow", handler, false);
+  }, window);
 }
 
 function insertBrowserCode(window) {
