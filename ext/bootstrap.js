@@ -346,7 +346,7 @@ function insertPanel(window) {
   return panel;
 }
 
-function insertButton(window, panel) {
+function createButton(window) {
   function makeImg(size, which) {
     var img = window.document.createElement('image');
     img.id = "ipvfox-" + size + "-" + which;
@@ -385,20 +385,6 @@ function insertButton(window, panel) {
   stack.setMain(AF_UNSPEC);
   stack.setAdditional(AF_INET, false);
   stack.setAdditional(AF_INET6, false);
-  
-  var entrypoint = window.document.getElementById('star-button');
-  entrypoint.parentNode.insertBefore(stack, entrypoint);
-  
-  unload(function() {
-    stack.parentNode.removeChild(stack);
-  }, window);
-  
-  /* Add click handler. */
-  stack.addEventListener("click", function() {
-    panel.hidden = false;
-    panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
-    panel.openPopup(stack, panel.getAttribute("position"), 0, 0, false, false);
-  }, false);
   
   return stack;
 }
@@ -489,11 +475,85 @@ function addIconUpdateHandlers(window, button) {
   }, window);
 }
 
-function insertBrowserCode(window) {
-  var panel = insertPanel(window);
-  var stack = insertButton(window, panel);
+function insertURLIcon(window, panel) {
+  var stack = createButton(window);
+  
+  var entrypoint = window.document.getElementById('star-button');
+  entrypoint.parentNode.insertBefore(stack, entrypoint);
+  
+  unload(function() {
+    stack.parentNode.removeChild(stack);
+  }, window);
+  
+  /* Add click handler. */
+  stack.addEventListener("click", function() {
+    panel.hidden = false;
+    panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
+    panel.openPopup(stack, panel.getAttribute("position"), 0, 0, false, false);
+  }, false);
   
   addIconUpdateHandlers(window, stack);
+}
+
+function insertToolbarButton(window, panel) {
+  function addButtonToToolbar() {
+    window.document.getElementById("navigator-toolbox").palette.appendChild(button);
+
+    /* If the user has added the button to a toolbar, insert it at their location. */
+    var toolbars = window.document.getElementsByTagName("toolbar");
+    for (let i = 0; i < toolbars.length; i++) {
+      var currentset = toolbars[i].getAttribute("currentset").split(",");
+      var idx = currentset.indexOf(button.id);
+      if (idx != -1) {
+        /* Insert button. It needs to go before the first element
+           listed in currentset that is actually on the toolbar. */
+        for (let j = idx + 1; j < currentset.length; j++) {
+          let elm = window.document.getElementById(currentset[j]);
+          if (elm) {
+            toolbars[i].insertItem(button.id, elm);
+            return;
+          }
+        }
+        /* Insert at end. */
+        toolbars[i].insertItem(button.id);
+        return;
+      }
+    }
+  }
+  
+  var stack = createButton(window);
+  
+  var button = window.document.createElement("toolbarbutton");
+  button.id = "ipvfox-button";
+  button.className = "chromeclass-toolbar-additional toolbarbutton-1";
+  button.setAttribute("tooltiptext", "List of hosts used for the current site");
+  button.setAttribute("label", "IPvFox");
+  
+  var label = window.document.createElement("label");
+  label.setAttribute("class", "toolbarbutton-text");
+  label.setAttribute("value", button.getAttribute("label"));
+  
+  button.addEventListener("command", function() {
+    panel.hidden = false;
+    panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
+    panel.openPopup(button, panel.getAttribute("position"), 0, 0, false, false);
+  }, false);
+  
+  button.appendChild(stack);
+  button.appendChild(label);
+  addButtonToToolbar();
+  addIconUpdateHandlers(window, stack);
+  
+  unload(function() {
+    button.parentNode.removeChild(button);
+  }, window);
+}
+
+function insertBrowserCode(window) {
+  var panel = insertPanel(window);
+  
+  insertURLIcon(window, panel);
+  insertToolbarButton(window, panel);
 }
 
 function logmsg(aMessage) {
