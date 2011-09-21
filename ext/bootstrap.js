@@ -483,6 +483,7 @@ function addIconUpdateHandlers(window, button) {
 
 function insertURLIcon(window, panel) {
   var stack = createButton(window);
+  stack.id = "ipvfox-urlbar-button";
   
   var entrypoint = window.document.getElementById('star-button');
   entrypoint.parentNode.insertBefore(stack, entrypoint);
@@ -547,11 +548,31 @@ function insertToolbarButton(window, panel) {
   }, window);
 }
 
+function insertPreferenceObserver(window, panel) {
+  function observe(hide) {
+    var button = window.document.getElementById("ipvfox-urlbar-button");
+    if (hide) {
+      if (button) button.style.display = "none";
+    } else {
+      debuglog("displaying");
+      if (!button) insertURLIcon(window, panel);
+      button.style.display = "";
+    }
+  }
+  Preferences.observe("extensions.ipvfox.hideURLIcon", observe);
+  unload(function() {
+    Preferences.ignore("extensions.ipvfox.hideURLIcon", observe);
+  });
+}
+
 function insertBrowserCode(window) {
   var panel = insertPanel(window);
   
-  insertURLIcon(window, panel);
   insertToolbarButton(window, panel);
+  if (!Preferences.get("extensions.ipvfox.hideURLIcon", false))
+    insertURLIcon(window, panel);
+  
+  insertPreferenceObserver(window, panel);
 }
 
 function logmsg(aMessage) {
@@ -701,6 +722,8 @@ function registerResourceURI(data) {
 function startup(data, reason) {
   /* Register HTTP observer, add per-window code. */
   registerResourceURI(data);
+  Cu.import("resource://ipvfox/res/preferences.jsm");
+  
   insertStyleSheet();
   httpRequestObserver.register();
   watchWindows(insertBrowserCode);
