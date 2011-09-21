@@ -228,13 +228,7 @@ function insertPanel(window) {
   /* The panel itself. */
   var panel = window.document.createElement('panel');
   panel.id = "ipvfox-panel";
-  if (window.StarUI.panel.getAttribute("type") == "arrow") {
-    panel.setAttribute("type", "arrow");
-    panel.setAttribute("position", "bottomcenter topright");
-  } else {
-    panel.removeAttribute("type");
-    panel.setAttribute("position", "after_end");
-  }
+  panel.setAttribute("type", "arrow");
   
   /* Add table to panel. */
   var table = panel.appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:table"));
@@ -258,7 +252,7 @@ function insertPanel(window) {
   }, window);
   
   /* Fill out the table when popup is shown. */
-  panel.addEventListener("popupshowing", function() {
+  panel.betterOpenPopup = function(anchor) {
     function addHostRow(host) {
       var row   = window.document.createElementNS("http://www.w3.org/1999/xhtml","html:tr");
       var cell1 = window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td");
@@ -341,7 +335,19 @@ function insertPanel(window) {
       RHCallbacks = RHCallbacks.filter(function(el) el != handleCacheUpdate);
       panel.hidden = true;
     }, false);
-  }, false);
+    
+    /* Work out which corner to put the arrow in. It should be positioned such that
+       the popup is inside the Firefox window where possible. */
+    position = (anchor.boxObject.y < (window.outerHeight / 2)) ?
+      "bottomcenter top" : "topcenter bottom";
+    position += (anchor.boxObject.x < (window.innerWidth / 2)) ?
+      "left" : "right";
+    
+    /* Display popup */
+    panel.hidden = false;
+    panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
+    panel.openPopup(anchor, position, 0, 0, false, false);
+  }
   
   return panel;
 }
@@ -486,11 +492,7 @@ function insertURLIcon(window, panel) {
   }, window);
   
   /* Add click handler. */
-  stack.addEventListener("click", function() {
-    panel.hidden = false;
-    panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
-    panel.openPopup(stack, panel.getAttribute("position"), 0, 0, false, false);
-  }, false);
+  stack.addEventListener("click", function() panel.betterOpenPopup(stack), false);
   
   addIconUpdateHandlers(window, stack);
 }
@@ -533,11 +535,7 @@ function insertToolbarButton(window, panel) {
   label.setAttribute("class", "toolbarbutton-text");
   label.setAttribute("value", button.getAttribute("label"));
   
-  button.addEventListener("command", function() {
-    panel.hidden = false;
-    panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
-    panel.openPopup(button, panel.getAttribute("position"), 0, 0, false, false);
-  }, false);
+  button.addEventListener("command", function() panel.betterOpenPopup(button), false);
   
   button.appendChild(stack);
   button.appendChild(label);
