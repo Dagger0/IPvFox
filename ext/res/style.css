@@ -19,9 +19,3 @@
 #ipvfox-pane {
   visibility: hidden;
 }
-
-#ipvfox-panel:not([type="arrow"]) {
-  padding: 6px !important;
-  margin-top: 3px !important;
-  margin-left: -4px !important;
-}
