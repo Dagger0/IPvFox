@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <setting pref="extensions.ipvfox.hideURLIcon" type="bool" title="Hide the URL bar icon"/>
+  <setting pref="extensions.ipvfox.alwaysShowURLIcon" type="bool" title="Always show the URL bar icon"/>
 </vbox>

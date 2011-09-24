@@ -487,6 +487,7 @@ function insertURLIcon(window, panel) {
   
   var entrypoint = window.document.getElementById('star-button');
   entrypoint.parentNode.insertBefore(stack, entrypoint);
+  addIconUpdateHandlers(window, stack);
   
   unload(function() {
     stack.parentNode.removeChild(stack);
@@ -495,7 +496,7 @@ function insertURLIcon(window, panel) {
   /* Add click handler. */
   stack.addEventListener("click", function() panel.betterOpenPopup(stack), false);
   
-  addIconUpdateHandlers(window, stack);
+  return stack;
 }
 
 function insertToolbarButton(window, panel) {
@@ -552,31 +553,53 @@ function insertToolbarButton(window, panel) {
   }, window);
 }
 
-function insertPreferenceObserver(window, panel) {
-  function observe(hide) {
-    var button = window.document.getElementById("ipvfox-urlbar-button");
-    if (hide) {
-      if (button) button.style.display = "none";
+function delayedInsertURLIcon(window, panel) {
+  function getWantedState() {
+    if (Preferences.get("extensions.ipvfox.alwaysShowURLIcon", false)) {
+      return true;
     } else {
-      debuglog("displaying");
-      if (!button) insertURLIcon(window, panel);
-      button.style.display = "";
+      var toolbars = window.document.getElementsByTagName("toolbar");
+      for (let i = 0; i < toolbars.length; i++) {
+        var currentset = toolbars[i].getAttribute("currentset").split(",");
+        var idx = currentset.indexOf("ipvfox-button");
+        if (idx != -1) {
+          return false;
+        }
+      }
+      return true;
     }
   }
-  Preferences.observe("extensions.ipvfox.hideURLIcon", observe);
+  
+  function updateState() {
+    var icon = window.document.getElementById("ipvfox-urlbar-button");
+    if (getWantedState()) {
+      debuglog("Showing button");
+      if (!icon) icon = insertURLIcon(window, panel);
+      icon.style.display = "";
+    } else {
+      debuglog("Hiding button");
+      if (icon) icon.style.display = "none";
+    }
+  }
+  
+  window.addEventListener("aftercustomization", updateState, false);
+  Preferences.observe("extensions.ipvfox.alwaysShowURLIcon", updateState);
   unload(function() {
-    Preferences.ignore("extensions.ipvfox.hideURLIcon", observe);
-  });
+    window.removeEventListener("aftercustomization", updateState, false);
+    Preferences.ignore("extensions.ipvfox.alwaysShowURLIcon", updateState);
+  }, window);
+  
+  updateState();
 }
 
 function insertBrowserCode(window) {
   var panel = insertPanel(window);
   
   insertToolbarButton(window, panel);
-  if (!Preferences.get("extensions.ipvfox.hideURLIcon", false))
-    insertURLIcon(window, panel);
-  
-  insertPreferenceObserver(window, panel);
+  /* Inserts the urlbar icon, subject to the alwaysShowURLIcon preference
+     and the presence of the toolbar icon, and installs handlers to hide the
+     button when necessary. Must go after the insertToolbarButton() call. */
+  delayedInsertURLIcon(window, panel);
 }
 
 function logmsg(aMessage) {
