@@ -5,3 +5,6 @@ from the Chrome extension "IPvFoo", available from
 The original code for windowWatcher() and unload() is from the
 examples/shiftAllBrowsers branch of Mardak's restartless, available from
    https://github.com/Mardak/restartless/
+
+preferences.jsm is from Mozilla Labs, available from
+   https://wiki.mozilla.org/Labs/JS_Modules#Preferences
