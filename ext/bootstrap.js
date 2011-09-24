@@ -749,6 +749,11 @@ function registerResourceURI(data) {
   unload(function() resource.setSubstitution("ipvfox", null));
 }
 
+function setDefaultPrefs() {
+  var branch = Services.prefs.getDefaultBranch("");
+  branch.setBoolPref("extensions.ipvfox.alwaysShowURLIcon", false);
+}
+
 /**
  * Handle the add-on being activated on install/enable
  */
@@ -757,6 +762,7 @@ function startup(data, reason) {
   registerResourceURI(data);
   Cu.import("resource://ipvfox/res/preferences.jsm");
   
+  setDefaultPrefs();
   insertStyleSheet();
   httpRequestObserver.register();
   watchWindows(insertBrowserCode);
