@@ -19,8 +19,6 @@
 //   * Clearing the list when it's open should display a "No hosts yet" message. Maybe use
 //     two tables, one with the message and one with the hosts, and hide them appropriately?
 //   * Split hosts list into page itself + additional resources
-//   * Remove call to updateButtonState() in handleCacheUpdate(). Probably requires the above
-//     host list split to work nicely.
 //   * Group multiple IPs from the same host together
 //   * Downloads cause breakage: they're treated as new page loads, and hang around in the queue
 //     until another page is loaded into the tab.
