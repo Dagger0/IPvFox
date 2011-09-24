@@ -336,6 +336,14 @@ function insertPanel(window) {
       panel.hidden = true;
     }, false);
     
+    /* Close on tab switch. Built-in panels seem to get something similar
+       automatically, although they also close on e.g. ctrl+f; this just takes
+       care of the case where the panel contents will be wrong. */
+    window.addEventListener("TabSelect", function() {
+      window.removeEventListener("TabSelect", arguments.callee, false);
+      panel.hidePopup();
+    }, false);
+    
     /* Work out which corner to put the arrow in. It should be positioned such that
        the popup is inside the Firefox window where possible. */
     position = (anchor.boxObject.y < (window.outerHeight / 2)) ?
