@@ -525,6 +525,8 @@ function insertToolbarButton(window, panel) {
   }
   
   var stack = createButton(window);
+  stack.style.marginTop = "1px";
+  stack.style.marginBottom = "1px";
   
   var button = window.document.createElement("toolbarbutton");
   button.id = "ipvfox-button";
@@ -535,6 +537,8 @@ function insertToolbarButton(window, panel) {
   var label = window.document.createElement("label");
   label.setAttribute("class", "toolbarbutton-text");
   label.setAttribute("value", button.getAttribute("label"));
+  label.style.margin = 0;
+  label.style.textAlign = "center";
   
   button.addEventListener("command", function() panel.betterOpenPopup(button), false);
   
