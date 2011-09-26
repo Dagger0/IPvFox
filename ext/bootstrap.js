@@ -500,7 +500,9 @@ function insertURLIcon(window, panel) {
   }, window);
   
   /* Add click handler. */
-  stack.addEventListener("click", function() panel.betterOpenPopup(stack), false);
+  stack.addEventListener("click", function(event) {
+    if (event.button == 0) panel.betterOpenPopup(stack);
+  }, false);
   
   return stack;
 }
