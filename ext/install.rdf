@@ -5,7 +5,7 @@
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="ipvfox@dagger2-addons.mozilla.org"
                    em:type="2"
-                   em:version="0.8"
+                   em:version="0.8.1"
                    em:name="IPvFox"
                    em:description="List hosts, and the corresponding addresses, from which a page and its resources are loaded."
                    em:creator="Dagger"

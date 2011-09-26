@@ -368,7 +368,6 @@ function createButton(window) {
   
   var stack = window.document.createElement('stack');
   var deck = window.document.createElement('deck');
-  stack.className = "urlbar-icon";
   stack.appendChild(deck);
   
   // Values are from the appropriate selectedIndex for the <deck> element
@@ -490,6 +489,7 @@ function addIconUpdateHandlers(window, button) {
 function insertURLIcon(window, panel) {
   var stack = createButton(window);
   stack.id = "ipvfox-urlbar-button";
+  stack.className = "urlbar-icon";
   
   var entrypoint = window.document.getElementById('star-button');
   entrypoint.parentNode.insertBefore(stack, entrypoint);
