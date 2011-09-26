@@ -18,11 +18,13 @@ XPI       := $(addprefix ${BUILDDIR},${PXPI})
 SUBST_CMD := sed -re "s/%ID%/${ID}/g" -e "s/%NAME%/${NAME}/g" -e "s/%FNAME%/${FNAME}/g" -e "s/%SHORTNAME%/${SHORTNAME}/g" \
 		-e "s/%XPI%/${PXPI}/g" -e "s/%VERSION%/${VERSION}/g" -e "s/%MINVER%/${MINVER}/g" -e "s/%MAXVER%/${MAXVER}/g"
 
-.PHONY : clean all
+.PHONY : clean all id
 all : ${XPI} $(addprefix ${BUILDDIR}, ${EXTRA})
 
 ${XPI}: ${FILES}
 	cd ${EXTDIR} && 7z a -tzip -r -mx=9 -x\!\*.bak -x\!\*.in "../$@" *
+
+id: $(addprefix ${BUILDDIR}, ${ID})
 
 $(addprefix ${BUILDDIR}, ${ID}): ${EXTDIR}/install.rdf
 	(cygpath -aw ${EXTDIR} || echo `pwd`/${EXTDIR}) > $(addprefix ${BUILDDIR}, ${ID})
