@@ -22,6 +22,7 @@ SUBST_CMD := sed -re "s/%ID%/${ID}/g" -e "s/%NAME%/${NAME}/g" -e "s/%FNAME%/${FN
 all : ${XPI} $(addprefix ${BUILDDIR}, ${EXTRA})
 
 ${XPI}: ${FILES}
+	rm -f ${XPI}
 	cd ${EXTDIR} && zip -1 -r "../$@" * -x \*.bak -x \*.i
 
 id: $(addprefix ${BUILDDIR}, ${ID})
