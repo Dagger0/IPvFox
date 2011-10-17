@@ -91,6 +91,7 @@ var httpRequestObserver =
         
         var originalWin = nC.getInterface(Components.interfaces.nsIDOMWindow);
       } catch(ex) { /* Load is from non-DOM source -- RSS feeds, EM etc */
+        if (DEBUG) throw (ex);
         return;
       }
       
@@ -413,7 +414,7 @@ function addIconUpdateHandlers(window, button) {
     currentTabInnerID = domWinUtils.currentInnerWindowID;
     currentTabOuterID = domWinUtils.outerWindowID;
     
-    debuglog ("TabSelect handler: set current outer window ID to " + domWinUtils.outerWindowID);
+    debuglog ("TabSelect handler: set current outer window ID to " + currentTabOuterID + ", inner window ID to " + currentTabInnerID);
   }
   
   function handler(evt) {
