@@ -26,6 +26,9 @@
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 
+var gResource = Services.io.getProtocolHandler("resource")
+                           .QueryInterface(Ci.nsIResProtocolHandler);
+
 const DEBUG = 0;
 const LOGALLREQUESTS = 0;
 
@@ -739,17 +742,13 @@ function insertStyleSheet() {
   unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
 }
 
-function registerResourceURI(data) {
-  /* Register our resource:// URL.
+function getResPath(data) {
+  /* Make an nsIURI to the folder for our resource:// URL.
    * http://starkravingfinkle.org/blog/2011/01/restartless-add-ons-more-resources/ */
-  var resource = Services.io.getProtocolHandler("resource")
-                            .QueryInterface(Ci.nsIResProtocolHandler);
   var alias = Services.io.newFileURI(data.installPath);
   if (!data.installPath.isDirectory())
     alias = Services.io.newURI("jar:" + alias.spec + "!/", null, null);
-  
-  resource.setSubstitution("ipvfox", alias);
-  unload(function() resource.setSubstitution("ipvfox", null));
+  return alias;
 }
 
 function setDefaultPrefs() {
@@ -762,7 +761,7 @@ function setDefaultPrefs() {
  */
 function startup(data, reason) {
   /* Register HTTP observer, add per-window code. */
-  registerResourceURI(data);
+  gResource.setSubstitution("ipvfox", getResPath(data));
   Cu.import("resource://ipvfox/res/preferences.jsm");
   
   setDefaultPrefs();
@@ -780,6 +779,17 @@ function shutdown(data, reason) {
   if (reason != APP_SHUTDOWN) {
     httpRequestObserver.unregister();
     unload();
+    
+    /* Cu.unload() will fail on Fx5/6, which is acceptable. preferences.jsm
+       is uninitialized with the above unload() call, so the module doesn't
+       need to be unloaded for a disable/enable cycle to work properly.
+       Upgrades that incompatibly change the module will require the minimum
+       compatible Fx version for the extension to be bumped to Fx7. */
+    try {
+        Cu.unload("resource://ipvfox/res/preferences.jsm");
+    } catch (e) { }
+    
+    gResource.setSubstitution("ipvfox", null);
   }
 }
 
