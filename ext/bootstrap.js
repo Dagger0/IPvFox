@@ -477,13 +477,13 @@ function addIconUpdateHandlers(window, button) {
   }, window, true);
   
   window.gBrowser.tabContainer.addEventListener("TabSelect", handler, false);
+  window.gBrowser.addEventListener("pageshow", handler, false);
+  window.gBrowser.addEventListener("DOMContentLoaded", handler, false);
+
   unload(function() {
     window.gBrowser.tabContainer.removeEventListener("TabSelect", handler, false);
-  }, window);
-  
-  window.gBrowser.addEventListener("pageshow", handler, false);
-  unload(function() {
     window.gBrowser.removeEventListener("pageshow", handler, false);
+    window.gBrowser.removeEventListener("DOMContentLoaded", handler, false);
   }, window);
 }
 
