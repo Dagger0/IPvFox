@@ -632,9 +632,15 @@ function watchWindows(callback) {
   function watcher(window) {
     // Now that the window has loaded, only handle browser windows
     let {documentElement} = window.document;
-    if (documentElement.getAttribute("windowtype") == "navigator:browser"
-        || documentElement.getAttribute("windowtype") == "mail:3pane")
+    if (documentElement.getAttribute("windowtype") == "navigator:browser")
+    {
+      /* SeaMonkey compatibility: gBrowser is only set when
+         window.setBrowser() is called for the first time. */
+      if ('getBrowser' in window)
+        window.getBrowser();
+      
       callback(window);
+    }
   }
   
   // Wait for the window to finish loading before running the callback
