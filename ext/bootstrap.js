@@ -45,6 +45,21 @@ var httpRequestObserver =
   observe: function(subject, topic, data) {
     function showDebugInfo() {
       if (!DEBUG) return;
+
+      var nC2 = channel.loadGroup.notificationCallbacks;
+      var domWin2      = nC2.getInterface(Components.interfaces.nsIDOMWindow);
+      var domWinUtils2 = domWin2.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                                .getInterface(Components.interfaces.nsIDOMWindowUtils);
+      var domWinInner2 = domWinUtils2.currentInnerWindowID;
+      var domWinOuter2 = domWinUtils2.outerWindowID;
+
+      var nC3 = channel.notificationCallbacks;
+      var domWin3      = nC3.getInterface(Components.interfaces.nsIDOMWindow);
+      var domWinUtils3 = domWin3.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                                .getInterface(Components.interfaces.nsIDOMWindowUtils);
+      var domWinInner3 = domWinUtils3.currentInnerWindowID;
+      var domWinOuter3 = domWinUtils3.outerWindowID;
+
       debuglog("Flags: " + channel.loadFlags
              + " (has LOAD_DOCUMENT_URI: " + (channel.loadFlags & Ci.nsIChannel.LOAD_DOCUMENT_URI)
              + ", LOAD_INITIAL_DOCUMENT_URI: " + (channel.loadFlags & Ci.nsIChannel.LOAD_INITIAL_DOCUMENT_URI)
@@ -55,6 +70,8 @@ var httpRequestObserver =
              + ", groupObserver: " + (channel.loadGroup && channel.loadGroup.groupObserver)
              + ", owner: " + (channel.owner)
              + ", windows: " + domWinInner + " (inner) " + domWinOuter + " (outer)"
+             + ", direct windows: " + domWinInner3 + " (inner) " + domWinOuter3 + " (outer)"
+             + ", direct loadGroup windows: " + domWinInner2 + " (inner) " + domWinOuter2 + " (outer)"
              );
     }
     
