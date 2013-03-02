@@ -131,6 +131,32 @@ var httpRequestObserver =
         family: (channel.remoteAddress.indexOf(":") == -1 ? AF_INET : AF_INET6),
       }
       
+      /* If the address matches ::xxxx:xxxx, convert it to ::nnn.nnn.nnn.nnn format. */
+      if (Preferences.get("extensions.ipvfox.detectEmbeddedv4")) {
+        if (matches = newentry.address.match(/^([0-9a-f:]+?)::([0-9a-f]{1,4}):([0-9a-f]{1,4})/)) {
+          function zeroPad(num,count) {
+            var numZeropad = num + '';
+            while(numZeropad.length < count) {
+              numZeropad = "0" + numZeropad;
+            }
+            return numZeropad;
+          };
+          
+          var p1 = zeroPad(matches[2], 4);
+          var p2 = zeroPad(matches[3], 4);
+          
+          var o1 = parseInt(p1.substr(0,2),16).toString(10);
+          var o2 = parseInt(p1.substr(2,2),16).toString(10);
+          var o3 = parseInt(p2.substr(0,2),16).toString(10);
+          var o4 = parseInt(p2.substr(2,2),16).toString(10);
+          
+          if (o1 != 0) { // Don't convert if the first octet would be 0.
+            var v4 = o1 + "." + o2 + "." + o3 + "." + o4;
+            newentry.address = matches[1] + "::" + v4;
+          }
+        };
+      };
+      
       if (isNewPage) {
         /* New page load: inner window id will be wrong. Wait around until we get a
            content-document-global-created for the same outer window, which will
@@ -777,6 +803,7 @@ function getResPath(data) {
 function setDefaultPrefs() {
   var branch = Services.prefs.getDefaultBranch("");
   branch.setBoolPref("extensions.ipvfox.alwaysShowURLIcon", false);
+  branch.setBoolPref("extensions.ipvfox.detectEmbeddedv4", true);
 }
 
 /**
