@@ -157,6 +157,21 @@ var httpRequestObserver =
         };
       };
       
+      /* If the address matches one of the configured NAT64 prefixes, set the family to v4. */
+      if (Preferences.get("extensions.ipvfox.nat64prefixes", "")
+            .split(/ /)
+            .filter(function(prefix) {
+              if (prefix.length < 1) return false;
+              try {
+                var re = new RegExp("^" + prefix);
+                if (newentry.address.match(re)) return true;
+                else return false;
+              } catch(e) { return false; };
+            }).length > 0)
+      {
+        newentry.family = AF_INET;
+      }
+      
       if (isNewPage) {
         /* New page load: inner window id will be wrong. Wait around until we get a
            content-document-global-created for the same outer window, which will
@@ -804,6 +819,7 @@ function setDefaultPrefs() {
   var branch = Services.prefs.getDefaultBranch("");
   branch.setBoolPref("extensions.ipvfox.alwaysShowURLIcon", false);
   branch.setBoolPref("extensions.ipvfox.detectEmbeddedv4", true);
+  branch.setCharPref("extensions.ipvfox.nat64prefixes", "64:ff9b::");
 }
 
 /**
