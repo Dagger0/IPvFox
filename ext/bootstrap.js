@@ -553,8 +553,8 @@ function insertURLIcon(window, panel) {
   stack.id = "ipvfox-urlbar-button";
   stack.className = "urlbar-icon";
   
-  var entrypoint = window.document.getElementById('star-button');
-  entrypoint.parentNode.insertBefore(stack, entrypoint);
+  var container = window.document.getElementById('urlbar-icons');
+  container.insertBefore(stack, container.firstChild);
   addIconUpdateHandlers(window, stack);
   
   unload(function() {
