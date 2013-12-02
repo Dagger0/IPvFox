@@ -26,9 +26,6 @@
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 
-var gResource = Services.io.getProtocolHandler("resource")
-                           .QueryInterface(Ci.nsIResProtocolHandler);
-
 const DEBUG = 0;
 const LOGALLREQUESTS = 0;
 
@@ -424,7 +421,7 @@ function createButton(window) {
   function makeImg(size, which) {
     var img = window.document.createElement('image');
     img.id = "ipvfox-" + size + "-" + which;
-    img.setAttribute("src", "resource://ipvfox/res/" + size + "-" + which + ".png");
+    img.setAttribute("src", "chrome://ipvfox/skin/" + size + "-" + which + ".png");
     return img;
   }
   
@@ -800,19 +797,10 @@ function insertStyleSheet() {
               .getService(Ci.nsIStyleSheetService);
   var IOS = Cc["@mozilla.org/network/io-service;1"]
               .getService(Components.interfaces.nsIIOService);
-  var fileURI= IOS.newURI("resource://ipvfox/res/style.css", null, null);
+  var fileURI= IOS.newURI("chrome://ipvfox/skin/style.css", null, null);
 
   sSS.loadAndRegisterSheet(fileURI, sSS.AGENT_SHEET);
   unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
-}
-
-function getResPath(data) {
-  /* Make an nsIURI to the folder for our resource:// URL.
-   * http://starkravingfinkle.org/blog/2011/01/restartless-add-ons-more-resources/ */
-  var alias = Services.io.newFileURI(data.installPath);
-  if (!data.installPath.isDirectory())
-    alias = Services.io.newURI("jar:" + alias.spec + "!/", null, null);
-  return alias;
 }
 
 function setDefaultPrefs() {
@@ -827,8 +815,7 @@ function setDefaultPrefs() {
  */
 function startup(data, reason) {
   /* Register HTTP observer, add per-window code. */
-  gResource.setSubstitution("ipvfox", getResPath(data));
-  Cu.import("resource://ipvfox/res/preferences.jsm");
+  Cu.import("chrome://ipvfox/content/preferences.jsm");
   
   setDefaultPrefs();
   insertStyleSheet();
@@ -846,16 +833,7 @@ function shutdown(data, reason) {
     httpRequestObserver.unregister();
     unload();
     
-    /* Cu.unload() will fail on Fx5/6, which is acceptable. preferences.jsm
-       is uninitialized with the above unload() call, so the module doesn't
-       need to be unloaded for a disable/enable cycle to work properly.
-       Upgrades that incompatibly change the module will require the minimum
-       compatible Fx version for the extension to be bumped to Fx7. */
-    try {
-        Cu.unload("resource://ipvfox/res/preferences.jsm");
-    } catch (e) { }
-    
-    gResource.setSubstitution("ipvfox", null);
+    Cu.unload("chrome://ipvfox/content/preferences.jsm");
   }
 }
 
