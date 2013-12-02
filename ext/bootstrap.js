@@ -44,16 +44,16 @@ var httpRequestObserver =
       if (!DEBUG) return;
 
       var nC2 = channel.loadGroup.notificationCallbacks;
-      var domWin2      = nC2.getInterface(Components.interfaces.nsIDOMWindow);
-      var domWinUtils2 = domWin2.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                                .getInterface(Components.interfaces.nsIDOMWindowUtils);
+      var domWin2      = nC2.getInterface(Ci.nsIDOMWindow);
+      var domWinUtils2 = domWin2.QueryInterface(Ci.nsIInterfaceRequestor)
+                                .getInterface(Ci.nsIDOMWindowUtils);
       var domWinInner2 = domWinUtils2.currentInnerWindowID;
       var domWinOuter2 = domWinUtils2.outerWindowID;
 
       var nC3 = channel.notificationCallbacks;
-      var domWin3      = nC3.getInterface(Components.interfaces.nsIDOMWindow);
-      var domWinUtils3 = domWin3.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                                .getInterface(Components.interfaces.nsIDOMWindowUtils);
+      var domWin3      = nC3.getInterface(Ci.nsIDOMWindow);
+      var domWinUtils3 = domWin3.QueryInterface(Ci.nsIInterfaceRequestor)
+                                .getInterface(Ci.nsIDOMWindowUtils);
       var domWinInner3 = domWinUtils3.currentInnerWindowID;
       var domWinOuter3 = domWinUtils3.outerWindowID;
 
@@ -75,8 +75,8 @@ var httpRequestObserver =
     if (topic == "http-on-examine-response") {
       var channel = subject;
       
-      channel.QueryInterface(Components.interfaces.nsIHttpChannel);
-      channel.QueryInterface(Components.interfaces.nsIHttpChannelInternal);
+      channel.QueryInterface(Ci.nsIHttpChannel);
+      channel.QueryInterface(Ci.nsIHttpChannelInternal);
       
       /* remoteAddress is randomly not available sometimes.
          Check, and mention on the console if it's not. */
@@ -99,14 +99,13 @@ var httpRequestObserver =
       }
       
       try {
-        var domWin      = nC.getInterface(Components.interfaces.nsIDOMWindow).top;
-        var domWinUtils = domWin
-                            .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                            .getInterface(Components.interfaces.nsIDOMWindowUtils);
+        var domWin      = nC.getInterface(Ci.nsIDOMWindow).top;
+        var domWinUtils = domWin.QueryInterface(Ci.nsIInterfaceRequestor)
+                                .getInterface(Ci.nsIDOMWindowUtils);
         var domWinInner = domWinUtils.currentInnerWindowID;
         var domWinOuter = domWinUtils.outerWindowID;
         
-        var originalWin = nC.getInterface(Components.interfaces.nsIDOMWindow);
+        var originalWin = nC.getInterface(Ci.nsIDOMWindow);
       } catch(ex) { /* Load is from non-DOM source -- RSS feeds, EM etc */
         if (DEBUG) throw (ex);
         return;
@@ -208,8 +207,8 @@ var httpRequestObserver =
     else if (topic == "content-document-global-created") {
       var domWin = subject;
       var domWinUtils = domWin.top
-                          .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                          .getInterface(Components.interfaces.nsIDOMWindowUtils);
+                              .QueryInterface(Ci.nsIInterfaceRequestor)
+                              .getInterface(Ci.nsIDOMWindowUtils);
       var domWinInner = domWinUtils.currentInnerWindowID;
       var domWinOuter = domWinUtils.outerWindowID;
       
@@ -245,7 +244,7 @@ var httpRequestObserver =
     }
     
     else if (topic == "inner-window-destroyed") {
-      var domWinInner = subject.QueryInterface(Components.interfaces.nsISupportsPRUint64)
+      var domWinInner = subject.QueryInterface(Ci.nsISupportsPRUint64)
                                .data;
       
       delete RHCache[domWinInner];
@@ -253,7 +252,7 @@ var httpRequestObserver =
     }
     
     else if (topic == "outer-window-destroyed") {
-      var domWinOuter = subject.QueryInterface(Components.interfaces.nsISupportsPRUint64)
+      var domWinOuter = subject.QueryInterface(Ci.nsISupportsPRUint64)
                                .data;
       
       delete RHWaitingList[domWinOuter];
@@ -261,23 +260,18 @@ var httpRequestObserver =
     }
   },
   
-  get observerService() {
-    return Components.classes["@mozilla.org/observer-service;1"]
-                     .getService(Components.interfaces.nsIObserverService);
-  },
-  
   register: function() {
-    this.observerService.addObserver(this, "http-on-examine-response", false);
-    this.observerService.addObserver(this, "content-document-global-created", false);
-    this.observerService.addObserver(this, "inner-window-destroyed", false);
-    this.observerService.addObserver(this, "outer-window-destroyed", false);
+    Services.obs.addObserver(this, "http-on-examine-response", false);
+    Services.obs.addObserver(this, "content-document-global-created", false);
+    Services.obs.addObserver(this, "inner-window-destroyed", false);
+    Services.obs.addObserver(this, "outer-window-destroyed", false);
   },
   
   unregister: function() {
-    this.observerService.removeObserver(this, "http-on-examine-response");
-    this.observerService.removeObserver(this, "content-document-global-created");
-    this.observerService.removeObserver(this, "inner-window-destroyed");
-    this.observerService.removeObserver(this, "outer-window-destroyed");
+    Services.obs.removeObserver(this, "http-on-examine-response");
+    Services.obs.removeObserver(this, "content-document-global-created");
+    Services.obs.removeObserver(this, "inner-window-destroyed");
+    Services.obs.removeObserver(this, "outer-window-destroyed");
   }
 };
 
@@ -341,8 +335,8 @@ function insertPanel(window) {
     }
     
     var domWin = window.gBrowser.mCurrentBrowser.contentWindow;
-    var domWinUtils = domWin.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                            .getInterface(Components.interfaces.nsIDOMWindowUtils);
+    var domWinUtils = domWin.QueryInterface(Ci.nsIInterfaceRequestor)
+                            .getInterface(Ci.nsIDOMWindowUtils);
     var domWinInner = domWinUtils.currentInnerWindowID;
     var domWinOuter = domWinUtils.outerWindowID;
     
@@ -466,8 +460,8 @@ function addIconUpdateHandlers(window, button) {
   function setCurrentTabIDs() {
     /* Fetch the nsIDomWindowUtils. */
     var domWin  = window.gBrowser.mCurrentBrowser.contentWindow;
-    domWinUtils = domWin.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                        .getInterface(Components.interfaces.nsIDOMWindowUtils);
+    domWinUtils = domWin.QueryInterface(Ci.nsIInterfaceRequestor)
+                        .getInterface(Ci.nsIDOMWindowUtils);
     
     currentTabInnerID = domWinUtils.currentInnerWindowID;
     currentTabOuterID = domWinUtils.outerWindowID;
@@ -670,9 +664,7 @@ function insertBrowserCode(window) {
 }
 
 function logmsg(aMessage) {
-  var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-                                 .getService(Components.interfaces.nsIConsoleService);
-  consoleService.logStringMessage("IPvFox: " + aMessage);
+  Services.console.logStringMessage("IPvFox: " + aMessage);
 }
 
 function debuglog(aMessage) {
@@ -683,9 +675,7 @@ function insertStyleSheet() {
   /* Insert stylesheet */
   var sSS = Cc["@mozilla.org/content/style-sheet-service;1"]
               .getService(Ci.nsIStyleSheetService);
-  var IOS = Cc["@mozilla.org/network/io-service;1"]
-              .getService(Components.interfaces.nsIIOService);
-  var fileURI= IOS.newURI("chrome://ipvfox/skin/style.css", null, null);
+  var fileURI = Services.io.newURI("chrome://ipvfox/skin/style.css", null, null);
 
   sSS.loadAndRegisterSheet(fileURI, sSS.AGENT_SHEET);
   unload(function() sSS.unregisterSheet(fileURI, sSS.AGENT_SHEET));
