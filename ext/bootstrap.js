@@ -154,19 +154,8 @@ var httpRequestObserver =
       };
       
       /* If the address matches one of the configured NAT64 prefixes, set the family to v4. */
-      if (Preferences.get("extensions.ipvfox.nat64prefixes", "")
-            .split(/ /)
-            .filter(function(prefix) {
-              if (prefix.length < 1) return false;
-              try {
-                var re = new RegExp("^" + prefix);
-                if (newentry.address.match(re)) return true;
-                else return false;
-              } catch(e) { return false; };
-            }).length > 0)
-      {
+      if (NAT64.isNAT64Address(newentry.address))
         newentry.family = AF_INET;
-      }
       
       if (isNewPage) {
         /* New page load: inner window id will be wrong. Wait around until we get a
@@ -258,6 +247,42 @@ var httpRequestObserver =
       delete RHWaitingList[domWinOuter];
       debuglog("outer-window-destroyed: " + domWinOuter);
     }
+
+    else if (topic == "addon-options-displayed") {
+      if (data == "ipvfox@dagger2-addons.mozilla.org") {
+        var doc = subject;
+
+        var node = doc.getElementById('ipvfox_nat64autodetect');
+        if (!node) return;
+
+        var desc = doc.createElement("description");
+        desc.setAttribute("flex", "1");
+        desc.textContent = "Unknown";
+
+        var button = doc.createElement("button");
+        button.setAttribute("label", "Refresh");
+
+        node.appendChild(desc);
+        node.appendChild(button);
+
+        function updateText(prefixes) {
+          if (prefixes && prefixes.length > 0)
+            desc.textContent = prefixes.join(", ");
+          else if (prefixes)
+            desc.textContent = "None";
+          else if (NAT64.detectAttempts > 0)
+            desc.textContent = "Error resolving \"ipv4only.arpa\"";
+          else
+            desc.textContent = "No attempt made";
+        }
+        updateText(NAT64.detectedPrefixes);
+
+        button.addEventListener("command", function resolveListener() {
+          desc.textContent = "Resolving...";
+          NAT64.detect(updateText);
+        });
+      }
+    }
   },
   
   register: function() {
@@ -265,6 +290,7 @@ var httpRequestObserver =
     Services.obs.addObserver(this, "content-document-global-created", false);
     Services.obs.addObserver(this, "inner-window-destroyed", false);
     Services.obs.addObserver(this, "outer-window-destroyed", false);
+    Services.obs.addObserver(this, "addon-options-displayed", false);
   },
   
   unregister: function() {
@@ -272,8 +298,71 @@ var httpRequestObserver =
     Services.obs.removeObserver(this, "content-document-global-created");
     Services.obs.removeObserver(this, "inner-window-destroyed");
     Services.obs.removeObserver(this, "outer-window-destroyed");
+    Services.obs.removeObserver(this, "addon-options-displayed");
   }
 };
+
+/* NAT64 detection and checking. */
+var NAT64 = {
+  detectedPrefixes: null,
+  detectAttempts: 0,
+
+  // Automatically detect any NAT64 ranges in use by looking up
+  // "ipv4only.arpa" and seeing if any AAAA records were synthesized.
+  // This is the general method from RFC 7050, but this implementation
+  // only detects NAT64 setups with the v4 address in the last 32 bits.
+  detect: function(callback) {
+    var dns = Cc["@mozilla.org/network/dns-service;1"]
+                .createInstance(Ci.nsIDNSService);
+
+    function convertRecordsToPrefixes(records) {
+      if (!records) return null;
+
+      let prefixes = [];
+      while (records.hasMore()) {
+        let record = records.getNextAddrAsString();
+        if (record.match(/:c000:a[ab]$/)) {
+          record = record.replace(/:c000:a[ab]$/, ":");
+          if (prefixes.indexOf(record) == -1)
+            prefixes.push(record);
+        }
+      }
+
+      return prefixes;
+    }
+
+    var listener = {
+      onLookupComplete: function(request, records, status) {
+        var prefixes = convertRecordsToPrefixes(records);
+        NAT64.detectedPrefixes = prefixes;
+        NAT64.detectAttempts++;
+
+        if (callback) callback(prefixes, request, records, status);
+      }
+    }
+
+    dns.asyncResolve("ipv4only.arpa", dns.RESOLVE_BYPASS_CACHE, listener, null);
+  },
+
+  // Determine if a given address is inside a NAT64 range, based on
+  // both the configured and the autodetected NAT64 ranges.
+  isNAT64Address: function(address) {
+    var prefixes = Preferences.get("extensions.ipvfox.nat64prefixes", "").split(/ /);
+    if (this.detectedPrefixes) prefixes = prefixes.concat(this.detectedPrefixes);
+
+    var matchingPrefixes = prefixes.filter(function(prefix) {
+      if (prefix.length < 1) return false;
+      try {
+        var re = new RegExp("^" + prefix);
+        if (address.match(re)) return true;
+        else return false;
+      } catch(e) { return false; };
+    });
+    return (matchingPrefixes.length > 0);
+  }
+}
+
+/* Toolbar buttons. */
 
 function insertPanel(window) {
   /* The panel itself. */
@@ -686,6 +775,7 @@ function setDefaultPrefs() {
   branch.setBoolPref("extensions.ipvfox.alwaysShowURLIcon", false);
   branch.setBoolPref("extensions.ipvfox.detectEmbeddedv4", true);
   branch.setCharPref("extensions.ipvfox.nat64prefixes", "64:ff9b::");
+  branch.setBoolPref("extensions.ipvfox.enableNAT64Autodetect", true);
 }
 
 /**
@@ -699,6 +789,9 @@ function startup(data, reason) {
   setDefaultPrefs();
   insertStyleSheet();
   httpRequestObserver.register();
+  if (Preferences.get("extensions.ipvfox.enableNAT64Autodetect"))
+    NAT64.detect();
+
   watchWindows(insertBrowserCode);
   debuglog("Registered.");
 }
