@@ -493,7 +493,7 @@ function insertPanel(window) {
     
     /* Display popup */
     panel.hidden = false;
-    panel.popupBoxObject.setConsumeRollupEvent(Ci.nsIPopupBoxObject.ROLLUP_CONSUME);
+    panel.popupBoxObject.setConsumeRollupEvent(panel.popupBoxObject.ROLLUP_CONSUME);
     panel.openPopup(anchor, position, 0, 0, false, false);
   }
   
