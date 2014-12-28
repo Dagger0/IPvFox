@@ -6,8 +6,8 @@
     e.g. 2001:db8::c000:201 to 2001:db8::192.0.2.1
   </setting>
   <setting pref="extensions.ipvfox.enableNAT64Autodetect" type="bool" title="Try to detect NAT64 prefixes on startup"></setting>
+  <setting id="ipvfox_nat64autodetect" type="control" title="Autodetected NAT64 prefixes"></setting>
   <setting pref="extensions.ipvfox.nat64prefixes" type="string" title="Manual NAT64 prefixes">
     Space-separated list of prefixes to treat as v4.
   </setting>
-  <setting id="ipvfox_nat64autodetect" type="control" title="Autodetected NAT64 prefixes"></setting>
 </vbox>
