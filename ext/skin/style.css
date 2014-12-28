@@ -19,3 +19,9 @@
 #ipvfox-pane {
   visibility: hidden;
 }
+
+#ipvfox-button stack[ipvfox-grayscale="true"] image,
+#ipvfox-urlbar-button[ipvfox-grayscale="true"] image {
+  filter: grayscale(100%) contrast(1000%);
+  opacity: 0.6;
+}

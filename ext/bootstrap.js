@@ -533,6 +533,14 @@ function createButton(window) {
   stack.setAdditional = function(family, has) {
     additionalMap[family].hidden = (has? 0 : 1);
   }
+
+  /* Grayscale icon filter. */
+  function updateGrayscaleAttribute() {
+    stack.setAttribute("ipvfox-grayscale", Preferences.get("extensions.ipvfox.useGrayscaleButtons"));
+  }
+  Preferences.observe("extensions.ipvfox.useGrayscaleButtons", updateGrayscaleAttribute);
+  unload(function() { Preferences.ignore("extensions.ipvfox.useGrayscaleButtons", updateState); }, window);
+  updateGrayscaleAttribute();
   
   /* Set the default state of the icon. */
   stack.setMain(AF_UNSPEC);
@@ -776,6 +784,7 @@ function setDefaultPrefs() {
   branch.setBoolPref("extensions.ipvfox.detectEmbeddedv4", true);
   branch.setCharPref("extensions.ipvfox.nat64prefixes", "64:ff9b::");
   branch.setBoolPref("extensions.ipvfox.enableNAT64Autodetect", true);
+  branch.setBoolPref("extensions.ipvfox.useGrayscaleButtons", false);
 }
 
 /**
