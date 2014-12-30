@@ -129,7 +129,7 @@ var httpRequestObserver =
       
       /* If the address matches ::xxxx:xxxx, convert it to ::nnn.nnn.nnn.nnn format. */
       if (Preferences.get("extensions.ipvfox.detectEmbeddedv4")) {
-        if (matches = newentry.address.match(/^([0-9a-f:]+?)::([0-9a-f]{1,4}):([0-9a-f]{1,4})/)) {
+        if (matches = newentry.address.match(/^([0-9a-f:]+?)::([0-9a-f]{1,4}):([0-9a-f]{1,4})$/)) {
           function zeroPad(num,count) {
             var numZeropad = num + '';
             while(numZeropad.length < count) {
