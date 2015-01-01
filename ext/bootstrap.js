@@ -545,7 +545,7 @@ function createButton(window) {
     stack.setAttribute("ipvfox-grayscale", Preferences.get("extensions.ipvfox.useGrayscaleButtons"));
   }
   Preferences.observe("extensions.ipvfox.useGrayscaleButtons", updateGrayscaleAttribute);
-  unload(function() { Preferences.ignore("extensions.ipvfox.useGrayscaleButtons", updateState); }, window);
+  unload(function() { Preferences.ignore("extensions.ipvfox.useGrayscaleButtons", updateGrayscaleAttribute); }, window);
   updateGrayscaleAttribute();
   
   /* Set the default state of the icon. */
