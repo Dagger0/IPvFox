@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
+<!DOCTYPE vbox SYSTEM "chrome://ipvfox/locale/options.dtd">
 
 <vbox xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <setting pref="extensions.ipvfox.alwaysShowURLIcon" type="bool" title="Always show the URL bar icon"/>
-  <setting pref="extensions.ipvfox.detectEmbeddedv4" type="bool" title="Try to detect and convert embedded v4 addresses">
-    e.g. 2001:db8::c000:201 to 2001:db8::192.0.2.1
+  <setting pref="extensions.ipvfox.alwaysShowURLIcon" type="bool" title="&alwaysShow;"/>
+  <setting pref="extensions.ipvfox.detectEmbeddedv4" type="bool" title="&convertEmbedded;">
+    &convertEmbedded.desc;
   </setting>
-  <setting pref="extensions.ipvfox.enableNAT64Autodetect" type="bool" title="Try to detect NAT64 prefixes on startup"></setting>
-  <setting id="ipvfox_nat64autodetect" type="control" title="Autodetected NAT64 prefixes"></setting>
-  <setting pref="extensions.ipvfox.nat64prefixes" type="string" title="Manual NAT64 prefixes">
-    Space-separated list of prefixes to treat as v4.
+  <setting pref="extensions.ipvfox.enableNAT64Autodetect" type="bool" title="&autoDetectNAT64;"></setting>
+  <setting id="ipvfox_nat64autodetect" type="control" title="&autoDetectedPrefixes;"></setting>
+  <setting pref="extensions.ipvfox.nat64prefixes" type="string" title="&manualPrefixes;">
+    &manualPrefixes.desc;
   </setting>
-  <setting pref="extensions.ipvfox.useGrayscaleButtons" type="bool" title="Use grayscale icons (Firefox 35+ only)"></setting>
+  <setting pref="extensions.ipvfox.useGrayscaleButtons" type="bool" title="&useGrayscaleButtons;"></setting>
 </vbox>

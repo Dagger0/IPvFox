@@ -26,6 +26,12 @@
 const {classes: Cc, interfaces: Ci, utils: Cu} = Components;
 Cu.import("resource://gre/modules/Services.jsm");
 
+function _(msg, ...args) {
+  if (!this._bundle) this._bundle = Services.strings.createBundle("chrome://ipvfox/locale/ipvfox.properties");
+  if (args.length == 0) return this._bundle.GetStringFromName(msg);
+  else return this._bundle.formatStringFromName(msg, args, args.length)
+}
+
 const DEBUG = 0;
 const LOGALLREQUESTS = 0;
 
@@ -257,10 +263,10 @@ var httpRequestObserver =
 
         var desc = doc.createElement("description");
         desc.setAttribute("flex", "1");
-        desc.textContent = "Unknown";
+        desc.textContent = _("Unknown");
 
         var button = doc.createElement("button");
-        button.setAttribute("label", "Refresh");
+        button.setAttribute("label", _("Refresh"));
 
         node.appendChild(desc);
         node.appendChild(button);
@@ -269,16 +275,16 @@ var httpRequestObserver =
           if (prefixes && prefixes.length > 0)
             desc.textContent = prefixes.join(", ");
           else if (prefixes)
-            desc.textContent = "None";
+            desc.textContent = _("None");
           else if (NAT64.detectAttempts > 0)
-            desc.textContent = "Error resolving \"ipv4only.arpa\"";
+            desc.textContent = _("Error resolving", "ipv4only.arpa");
           else
-            desc.textContent = "No attempt made";
+            desc.textContent = _("No attempt made");
         }
         updateText(NAT64.detectedPrefixes);
 
         button.addEventListener("command", function resolveListener() {
-          desc.textContent = "Resolving...";
+          desc.textContent = _("Resolving...");
           NAT64.detect(updateText);
         });
       }
