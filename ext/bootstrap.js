@@ -369,7 +369,6 @@ var NAT64 = {
 }
 
 /* Toolbar buttons. */
-
 function insertPanel(window) {
   /* The panel itself. */
   var panel = window.document.createElement('panel');
