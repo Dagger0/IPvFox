@@ -1,0 +1,27 @@
+Firefox extension to list the hosts, and corresponding IPs, from which a page
+and its resources are loaded.
+
+AMO listing: https://addons.mozilla.org/en-US/firefox/addon/ipvfox/
+
+IPvFox is essentially a Firefox version of the Chrome extension IPvFoo:
+  http://code.google.com/p/ipvfoo/
+although they're by different authors and don't share any code.
+
+
+Compiling
+---------
+
+Run `make`. The included Makefile requires 'zip' and is tested on Cygwin, but
+it ought to work on Linux too.
+
+Alternately, you can just zip up the contents of ext/ into an .xpi file.
+
+
+Installing
+----------
+
+The Makefile will leave you with two files in build/: an XPI and a proxy file.
+The XPI file can be installed by dragging/dropping it onto Firefox, but if
+you're planning on doing some hacking, you should instead copy the proxy
+file to your Firefox profile's extensions/ folder. The extension will then be
+loaded directly from wherever you ran `make`.
