@@ -1,4 +1,4 @@
-<!ENTITY alwaysShow "Always show the URL bar icon">
+<!ENTITY alwaysShow "Show URL bar icon even when toolbar button in use">
 <!ENTITY convertEmbedded "Try to detect and convert embedded v4 addresses">
 <!ENTITY convertEmbedded.desc "e.g. 2001:db8::c000:201 to 2001:db8::192.0.2.1">
 <!ENTITY autoDetectNAT64 "Try to detect NAT64 prefixes on startup">
