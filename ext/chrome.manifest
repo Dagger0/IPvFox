@@ -2,3 +2,4 @@ content ipvfox chrome/
 skin    ipvfox classic/1.0 skin/
 locale  ipvfox en-US locale/en-US/
 locale  ipvfox en-GB locale/en-GB/
+locale  ipvfox fr-FR locale/fr-FR/
