@@ -1,0 +1,8 @@
+<!ENTITY alwaysShow "Aficher l'icône dans la barre d'adresse même quand le bouton de la barre d'outils est utilisé">
+<!ENTITY convertEmbedded "Essayer de détecter et convertir les adresses v4 intégrées">
+<!ENTITY convertEmbedded.desc "e.g. 2001:db8::c000:201 to 2001:db8::192.0.2.1">
+<!ENTITY autoDetectNAT64 "Essayer de détecter les préfixes NAT64 au démarrage">
+<!ENTITY autoDetectedPrefixes "Préfixes NAT64 détectés automatiquement">
+<!ENTITY manualPrefixes "Préfixes NAT64 manuels">
+<!ENTITY manualPrefixes.desc "Liste de préfixes séparés par un espace à considérer comme v4.">
+<!ENTITY useGrayscaleButtons "Utiliser des icônes en nuances de gris (Firefox 35+ uniquement)">
