@@ -441,7 +441,7 @@ function insertPanel(window) {
     if (typeof(hosts) === 'undefined') {
       var cell = table.appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:tr"))
                       .appendChild(window.document.createElementNS("http://www.w3.org/1999/xhtml","html:td"));
-      cell.appendChild(window.document.createTextNode("No hosts seen yet."));
+      cell.appendChild(window.document.createTextNode(_("No hosts seen yet.")));
       cell.setAttribute("colspan", "2");
       
       table.setAttribute("ipvfox-nohosts", "true");
