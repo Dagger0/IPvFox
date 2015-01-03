@@ -21,7 +21,7 @@ ${XPI}: ${FILES}
 	cd ${EXTDIR} && zip -1 -r -x\*.bak "../$@" *
 
 ${IDFILE}: ${EXTDIR}/install.rdf
-	(cygpath -aw ${EXTDIR} || echo `pwd`/${EXTDIR}) > $(addprefix ${BUILDDIR}, ${ID})
+	(which cygpath >/dev/null 2>&1 && cygpath -aw ${EXTDIR} || echo `pwd`/${EXTDIR}) > $(addprefix ${BUILDDIR}, ${ID})
 
 clean:
 	rm -rf ${BUILDDIR}
