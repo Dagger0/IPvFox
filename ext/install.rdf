@@ -5,13 +5,15 @@
   <RDF:Description RDF:about="urn:mozilla:install-manifest"
                    em:id="ipvfox@dagger2-addons.mozilla.org"
                    em:type="2"
-                   em:version="0.8.6"
+                   em:version="0.8.6.1"
                    em:name="IPvFox"
                    em:description="List hosts, and the corresponding addresses, from which a page and its resources are loaded."
                    em:creator="Dagger"
                    em:bootstrap="true">
     <em:targetApplication RDF:resource="rdf:#$firefox"/>
     <em:targetApplication RDF:resource="rdf:#$seamonkey"/>
+
+    <em:translator>Pierre Rudloff</em:translator>      <!-- fr-FR -->
   </RDF:Description>
   <RDF:Description RDF:about="rdf:#$firefox"
                    em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
